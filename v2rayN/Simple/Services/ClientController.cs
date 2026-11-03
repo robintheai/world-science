@@ -334,6 +334,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
     {
         if (row is not null && !AvailableLocations.Any(n => n.Id == row.Id))
             throw new InvalidOperationException(Ui.T("This location is no longer available. Choose another location.", "这条线路已失效，请换一条。"));
+        FallbackActive = false;
         Settings.ManualCountry = null; // New choices pin an endpoint; legacy country preferences remain readable until the next choice.
         Settings.ManualNodeId = manual ? row!.Id : null;
         Settings.ManualNodeKey = manual ? NodeKey(row!) : null;
@@ -406,7 +407,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
                 _connectCts = transition;
                 try
                 {
-                    if (disconnect) { await DisconnectInternal(suspendMacBridge: UseMacBridge); ConnectedSince = null; return; }
+                    if (disconnect) { await DisconnectInternal(suspendMacBridge: UseMacBridge); ConnectedSince = null; FallbackActive = false; return; }
                     if (!integrationTest && await FindConflict(transition.Token) is { } conflict)
                         throw new InvalidOperationException(conflict);
                     transition.Token.ThrowIfCancellationRequested();
@@ -471,15 +472,20 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
     {
         var candidates = AvailableLocations.Where(n => AutomaticLocation ||
             (Settings.ManualCountry is not null ? n.Country == ChosenCountry : n.Id == ChosenLocationId)).ToList();
-        if (!AutomaticLocation && candidates.Count == 0)
+        var fallback = !AutomaticLocation && Settings.Fallback;
+        if (!AutomaticLocation && candidates.Count == 0 && !fallback)
         {
             _wantConnected = false; await DisconnectInternal();
             throw new InvalidOperationException(Ui.T("Selected location is no longer available. Choose another location or Automatic.", "所选线路已失效，请换一条线路或选择「自动」。"));
         }
-        if (candidates.Count == 0) { _wantConnected = false; await DisconnectInternal(); throw new InvalidOperationException(Ui.T("Add a working subscription first.", "请先添加有效的订阅链接。")); }
-        var available = candidates.Where(n => !_cooldowns.TryGetValue(n.Id, out var until) || until <= DateTimeOffset.UtcNow).ToList();
-        if (available.Count == 0) available = candidates;
-        available = await RankCandidates(available, token);
+        if (!AvailableLocations.Any()) { _wantConnected = false; await DisconnectInternal(); throw new InvalidOperationException(Ui.T("Add a working subscription first.", "请先添加有效的订阅链接。")); }
+        bool Cooling(NodeRow n) => _cooldowns.TryGetValue(n.Id, out var until) && until > DateTimeOffset.UtcNow;
+        var available = await RankCandidates(candidates.Where(n => !Cooling(n)).ToList(), token);
+        // Like a fallback group: the chosen location first, then the fastest others, same country first.
+        var others = fallback ? AvailableLocations.Except(candidates).ToList() : [];
+        if (fallback) available.AddRange((await RankCandidates(others.Where(n => !Cooling(n)).ToList(), token)).OrderBy(n => n.Country == ChosenCountry ? 0 : 1));
+        // Every candidate failed recently: try them all again rather than give up.
+        if (available.Count == 0) available = await RankCandidates([.. candidates, .. others], token);
         Exception? lastFailure = null;
         foreach (var row in available)
         {
@@ -500,6 +506,13 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
                 _health.Reset(); _offline = false; _recoveryAttempts = 0; _lastHealth = DateTimeOffset.UtcNow;
                 ConnectedSince ??= DateTimeOffset.UtcNow;
                 if (_proxyFallback) Notice = Ui.T("Connected with system proxy because the VPN adapter was blocked. Some apps may bypass it.", "VPN 虚拟网卡被拦截，已改用系统代理连接。浏览器可正常使用，少数软件可能不走代理。");
+                FallbackActive = fallback && !candidates.Contains(row);
+                if (FallbackActive)
+                {
+                    _nextReturnCheck = DateTimeOffset.UtcNow + ReturnCheckInterval;
+                    Logging.SaveLog($"Simple.Fallback: chosen location unavailable; using {row.Name}");
+                    if (!_proxyFallback) Notice = Ui.T($"Your chosen location is unavailable, so {LocationTitle(row)} is used for now. It switches back when it recovers.", $"所选线路暂不可用，已临时切换到 {LocationTitle(row)}，恢复后会自动切回。");
+                }
                 foreach (var node in Nodes) { node.Current = node.Id == row.Id; node.Notify(); }
                 SelectedNode = row; _lastHealthyNode = NodeKey(row); await ConfigHandler.SaveConfig(Config);
                 _ = RefreshAvailability();
@@ -529,6 +542,71 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             }
         }
         throw new InvalidOperationException(ConnectionFailure.Message(lastFailure, AutomaticLocation), lastFailure);
+    }
+    /// <summary>Connected to another location because the chosen one failed. The chosen one is retried in the background.</summary>
+    public bool FallbackActive { get; private set; }
+    private static readonly TimeSpan ReturnCheckInterval = TimeSpan.FromMinutes(3);
+    private DateTimeOffset _nextReturnCheck;
+    // The chosen location is tested through its own core, so the fallback connection keeps carrying traffic meanwhile.
+    private Task ReturnToChosen(NodeRow chosen, DateTimeOffset now) => RunExclusive(async () =>
+    {
+        _nextReturnCheck = now + ReturnCheckInterval;
+        _connectCts = new();
+        try
+        {
+            if (!await NodeWorks(chosen, _connectCts.Token)) return;
+            Logging.SaveLog("Simple.Fallback: chosen location works again; switching back");
+            _cooldowns.Remove(chosen.Id);
+            await DisconnectInternal(keepMacBridge: UseMacBridge);
+            if (_wantConnected) await ConnectSmart(_connectCts.Token);
+            if (Connected && !FallbackActive) Notice = "";
+        }
+        catch (OperationCanceledException) when (_connectCts.IsCancellationRequested) { }
+        finally
+        {
+            _connectCts.Dispose(); _connectCts = null;
+            if (!Connected && _wantConnected) ScheduleRetry();
+        }
+    }, allowMeasurements: true);
+    private async Task<bool> NodeWorks(NodeRow row, CancellationToken token)
+    {
+        var physicalInterface = integrationTest ? null : await MacVpnConflict.FindPhysicalInterface();
+        // Unbound, a Mac test would run through the current tunnel and pass because of the fallback location.
+        if (!integrationTest && OperatingSystem.IsMacOS() && physicalInterface is null) return false;
+        ProcessService? process = null;
+        try
+        {
+            int port;
+            (process, port) = await StartTestCore(row, physicalInterface, token);
+            using var handler = new SocketsHttpHandler { Proxy = new WebProxy($"socks5://127.0.0.1:{port}"), UseProxy = true, AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(10) };
+            using var http = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
+            await LatencyBenchmark.Measure(http, Config.SpeedTestItem.SpeedPingTestUrl, TimeSpan.FromSeconds(Settings.PingTimeoutSeconds), token);
+            return true;
+        }
+        catch (Exception ex) when (!token.IsCancellationRequested) { Logging.SaveLog("Simple.Fallback: chosen location still unavailable", ex); return false; }
+        finally { if (process is not null) { await process.StopAsync(); process.Dispose(); } }
+    }
+    /// <summary>Starts a separate core for one location and waits until its local SOCKS port accepts connections.</summary>
+    private async Task<(ProcessService Process, int Port)> StartTestCore(NodeRow row, string? physicalInterface, CancellationToken token)
+    {
+        var item = new ServerTestItem { IndexId = row.Id, Profile = row.Profile, ConfigType = row.Profile.ConfigType,
+            CoreType = AppManager.Instance.GetCoreType(row.Profile, row.Profile.ConfigType), Port = row.Profile.Port };
+        var process = await CoreManager.Instance.LoadCoreConfigSpeedtest(item, includeSubChain: false, bindInterface: physicalInterface)
+            ?? throw new InvalidOperationException("speed-test core did not start");
+        try
+        {
+            using var startup = CancellationTokenSource.CreateLinkedTokenSource(token);
+            startup.CancelAfter(TimeSpan.FromSeconds(8));
+            while (true)
+            {
+                if (process.HasExited) throw new InvalidOperationException("speed-test core exited");
+                using var probe = new TcpClient();
+                try { await probe.ConnectAsync(IPAddress.Loopback, item.Port, startup.Token); break; }
+                catch (SocketException) { await Task.Delay(100, startup.Token); }
+            }
+            return (process, item.Port);
+        }
+        catch { await process.StopAsync(); process.Dispose(); throw; }
     }
     private readonly Dictionary<string, (double Delay, DateTimeOffset At)> _reachability = new();
     private string? _lastHealthyNode;
@@ -621,6 +699,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             { _lastRecoveryRefresh = now; await UpdateSubscriptions(true); }
             return;
         }
+        if (FallbackActive && now >= _nextReturnCheck && !IsTesting && ManualNode() is { } chosen) { await ReturnToChosen(chosen, now); return; }
         if (now - _lastHealth < _health.Interval) return;
         _lastHealth = now;
         await RunExclusive(async () =>
@@ -1041,22 +1120,9 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
                     }
                     else
                     {
-                        var item = new ServerTestItem { IndexId = row.Id, Profile = row.Profile, ConfigType = row.Profile.ConfigType,
-                            CoreType = AppManager.Instance.GetCoreType(row.Profile, row.Profile.ConfigType), Port = row.Profile.Port };
-                        process = await CoreManager.Instance.LoadCoreConfigSpeedtest(item, includeSubChain: false, bindInterface: physicalInterface);
-                        if (process is null) throw new InvalidOperationException("speed-test core did not start");
-                        using (var startup = CancellationTokenSource.CreateLinkedTokenSource(token))
-                        {
-                            startup.CancelAfter(TimeSpan.FromSeconds(8));
-                            while (true)
-                            {
-                                if (process.HasExited) throw new InvalidOperationException("speed-test core exited");
-                                using var probe = new TcpClient();
-                                try { await probe.ConnectAsync(IPAddress.Loopback, item.Port, startup.Token); break; }
-                                catch (SocketException) { await Task.Delay(100, startup.Token); }
-                            }
-                        }
-                        using var handler = new SocketsHttpHandler { Proxy = new WebProxy($"socks5://127.0.0.1:{item.Port}"), UseProxy = true, AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(10) };
+                        int port;
+                        (process, port) = await StartTestCore(row, physicalInterface, token);
+                        using var handler = new SocketsHttpHandler { Proxy = new WebProxy($"socks5://127.0.0.1:{port}"), UseProxy = true, AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(10) };
                         using var http = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
                         if (!download) try
                         {

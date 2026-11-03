@@ -77,6 +77,10 @@
       <ToggleSwitch x:Name="AutoConnectSwitch" Grid.Column="1" OnContent="" OffContent="" IsCheckedChanged="AutoConnectChanged" VerticalAlignment="Center"/>
      </Grid></Border>
      <Border Classes="card"><Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.Fallback}" FontSize="13" FontWeight="Medium"/><TextBlock Text="{x:Static s:Strings.FallbackDetail}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
+      <ToggleSwitch x:Name="FallbackSwitch" Grid.Column="1" OnContent="" OffContent="" IsCheckedChanged="FallbackChanged" VerticalAlignment="Center"/>
+     </Grid></Border>
+     <Border Classes="card"><Grid ColumnDefinitions="*,Auto">
       <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.Language}" FontSize="13" FontWeight="Medium"/><TextBlock x:Name="LanguageNote" Text="{x:Static s:Strings.LanguageRestart}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
       <ComboBox x:Name="LanguageBox" Grid.Column="1" SelectionChanged="LanguageChanged" VerticalAlignment="Center" MinWidth="110"/>
      </Grid></Border>

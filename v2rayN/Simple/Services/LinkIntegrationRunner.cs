@@ -151,8 +151,27 @@ rules:
                 }
                 Check(client.Config.CoreBasicItem.BindInterface == originalBinding, "physical binding does not overwrite saved global settings");
             }
+            // The app core routes 127.0.0.1 directly, so a check that must pass through the node uses a domain that only the
+            // fixture nodes can reach: they send it to a local responder.
+            const string ThroughNode = "http://probe.fallback-fixture.world-science/ping";
+            var probePort = Port(); var responder = new TcpListener(IPAddress.Loopback, probePort); responder.Start();
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    using var c = await responder.AcceptTcpClientAsync(); using var s = c.GetStream(); var buffer = new byte[4096]; var request = "";
+                    while (!request.Contains("\r\n\r\n")) { var n = await s.ReadAsync(buffer); if (n == 0) break; request += Encoding.ASCII.GetString(buffer, 0, n); }
+                    await s.WriteAsync(Encoding.ASCII.GetBytes("HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"));
+                }
+            });
+            string FixtureCore(int inbound) => JsonSerializer.Serialize(new
+            {
+                inbounds = new[] { new { listen = "127.0.0.1", port = inbound, protocol = "socks", settings = new { auth = "noauth", udp = true } } },
+                outbounds = new object[] { new { protocol = "freedom", tag = "direct" }, new { protocol = "freedom", tag = "probe", settings = new { redirect = $"127.0.0.1:{probePort}" } } },
+                routing = new { rules = new[] { new { type = "field", domain = new[] { "full:probe.fallback-fixture.world-science" }, outboundTag = "probe" } } }
+            });
             var fixture = Path.Combine(output, "fixture-core.json");
-            File.WriteAllText(fixture, JsonSerializer.Serialize(new { inbounds = new[] { new { listen = "127.0.0.1", port = socks, protocol = "socks", settings = new { auth = "noauth", udp = true } } }, outbounds = new[] { new { protocol = "freedom" } } }));
+            File.WriteAllText(fixture, FixtureCore(socks));
             core = Process.Start(new ProcessStartInfo(Utils.GetBinPath(OperatingSystem.IsWindows() ? "xray.exe" : "xray", "Xray")) { ArgumentList = { "run", "-c", fixture }, UseShellExecute = false });
             await Task.Delay(500);
             client.Settings.Tun = false;
@@ -210,6 +229,40 @@ rules:
             await priorityConnect.WaitAsync(TimeSpan.FromSeconds(8)); await testing;
             Check(client.Connected && !client.IsTesting, "speed test cleanup completes before connection starts");
             await client.Toggle();
+            // Fallback: a chosen location that stops working gives way to a working one and is used again once it recovers.
+            var japan = client.AvailableLocations.First(n => n.Profile.Port == socks); var germany = client.AvailableLocations.First(n => n.Profile.Port == second);
+            var secondFixture = Path.Combine(output, "fixture-core-2.json");
+            File.WriteAllText(secondFixture, FixtureCore(second));
+            Process? secondCore = null; var pingUrl = client.Config.SpeedTestItem.SpeedPingTestUrl;
+            try
+            {
+                client.Config.SpeedTestItem.SpeedPingTestUrl = ThroughNode;
+                await client.ChooseLocation(germany); client.Settings.Fallback = false;
+                await client.Toggle();
+                Check(!client.Connected && !client.FallbackActive, "with fallback off, a chosen location that does not work is not replaced");
+                if (client.WantsConnection) await client.Toggle();
+                client.Settings.Fallback = true;
+                await client.Toggle();
+                Check(client.Connected && client.FallbackActive && client.Config.IndexId == japan.Id && client.LocationChoice.Contains("Germany") && client.Notice.Contains("Japan"),
+                    "a chosen location that does not work gives way to a working one, and the choice is kept");
+                await client.VerifyRecoveryTick(DateTimeOffset.UtcNow.AddMinutes(4));
+                Check(client.Connected && client.FallbackActive && client.Config.IndexId == japan.Id, "while the chosen location is still down, the working one is kept");
+                secondCore = Process.Start(new ProcessStartInfo(Utils.GetBinPath(OperatingSystem.IsWindows() ? "xray.exe" : "xray", "Xray")) { ArgumentList = { "run", "-c", secondFixture }, UseShellExecute = false });
+                await Task.Delay(500);
+                await client.VerifyRecoveryTick(DateTimeOffset.UtcNow.AddMinutes(8));
+                Check(client.Connected && !client.FallbackActive && client.Config.IndexId == germany.Id && !client.HasNotice, "once the chosen location works again, the connection switches back to it");
+                secondCore.Kill(true); secondCore.WaitForExit(); secondCore.Dispose(); secondCore = null;
+                var start = DateTimeOffset.UtcNow.AddMinutes(9);
+                foreach (var seconds in new[] { 0, 10, 20 }) await client.VerifyRecoveryTick(start.AddSeconds(seconds));
+                Check(client.Connected && client.FallbackActive && client.Config.IndexId == japan.Id, "when the chosen location dies while connected, three failed health checks move the connection to a working one");
+            }
+            finally
+            {
+                if (client.Connected || client.WantsConnection) await client.Toggle();
+                client.Config.SpeedTestItem.SpeedPingTestUrl = pingUrl;
+                await client.ChooseLocation(null);
+                if (secondCore is { HasExited: false }) secondCore.Kill(true); secondCore?.Dispose();
+            }
             Check(MacVpnConflict.PhysicalInterface("utun8 : flags 0x5 (IPv4)\n  en0 : flags 0x7 (IPv4,IPv6)") == "en0", "isolated speed core binds to physical interface rather than another VPN");
             Check(MacVpnConflict.PhysicalInterface("utun8 : flags 0x5 (IPv4)") is null, "no physical interface is guessed when none is available");
             client.Notice = "Unable to update nodes. Your saved nodes are still available.";

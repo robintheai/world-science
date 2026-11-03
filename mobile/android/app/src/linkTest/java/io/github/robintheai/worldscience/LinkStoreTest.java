@@ -28,7 +28,12 @@ public final class LinkStoreTest {
    assertFalse(context.getSharedPreferences("link-subscriptions",0).getAll().toString().contains("fixture-only"));
    instrumentation.runOnMainSync(()->activity.importLink(url));idle(activity);assertEquals(1,LinkStore.read(context).length());
    String before=LinkStore.config(context);invalid.set(true);try{LinkStore.refresh(context);fail("Invalid update accepted");}catch(Exception expected){}assertEquals(before,LinkStore.config(context));
-   Locations.select(context,Locations.all().get(0));JSONObject config=new JSONObject(Locations.configure(context,before));JSONArray out=config.getJSONArray("outbounds");for(int i=0;i<out.length();i++)if(out.getJSONObject(i).optString("tag").equals("auto"))assertEquals(1,out.getJSONObject(i).getJSONArray("outbounds").length());
+   Locations.select(context,Locations.all().get(0));JSONObject config=new JSONObject(Locations.configure(context,before,false));JSONArray out=config.getJSONArray("outbounds");for(int i=0;i<out.length();i++)if(out.getJSONObject(i).optString("tag").equals("auto"))assertEquals(1,out.getJSONObject(i).getJSONArray("outbounds").length());
+   // Fallback: the other locations carry traffic and only the recovery check still uses the chosen one.
+   JSONObject spare=new JSONObject(Locations.configure(context,before,true));JSONArray spareOut=spare.getJSONArray("outbounds");String chosen=Locations.all().get(0);
+   for(int i=0;i<spareOut.length();i++)if(spareOut.getJSONObject(i).optString("tag").equals("auto")){JSONArray group=spareOut.getJSONObject(i).getJSONArray("outbounds");assertEquals(1,group.length());assertEquals(Locations.all().get(1),group.getString(0));}
+   JSONArray rules=spare.getJSONObject("route").getJSONArray("rules");JSONObject check=rules.getJSONObject(rules.length()-1);
+   assertEquals(chosen,check.getString("outbound"));assertEquals("cp.cloudflare.com",check.getJSONArray("domain").getString(0));assertEquals(8080,check.getJSONArray("port").getInt(0));assertTrue(Locations.CHECK_URL.contains("cp.cloudflare.com:8080"));io.github.robintheai.worldscience.mobilecore.Mobilecore.checkConfig(spare.toString());
    instrumentation.runOnMainSync(()->{try{var f=MainActivity.class.getDeclaredField("input");f.setAccessible(true);assertEquals("",((android.widget.EditText)f.get(activity)).getText().toString());}catch(Exception e){throw new RuntimeException(e);}});
    LinkLifecycleTest.capture(context,"link-home.png");
    invalid.set(false);assertEquals(1,LinkStore.refresh(context));

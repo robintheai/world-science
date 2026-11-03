@@ -21,7 +21,9 @@ public final class TunnelService extends VpnService implements Native {
  private volatile java.net.HttpURLConnection activeProbe;
  private volatile Network underlying;
  private ConnectivityManager connectivity;
- private int failures,ticks;
+ private int failures,ticks,fallbackChecks;
+ // The chosen location failed, so the fastest other one carries traffic until the chosen one answers again.
+ private volatile boolean fallback;
  private String lastNetwork="",shownState="";
  private ScheduledFuture<?> networkUpdate;
  private String testConfig;
@@ -68,7 +70,7 @@ public final class TunnelService extends VpnService implements Native {
  public int onStartCommand(Intent intent,int flags,int id){
   if(intent!=null&&"STOP".equals(intent.getAction())){pendingStart=false;disconnect();return START_NOT_STICKY;}
   if(intent!=null&&"SELECT_COUNTRY".equals(intent.getAction())){
-   if(wanted&&!closing.get())execute(()->{if(!wanted)return;state="Connecting…";try{connect();}catch(Exception e){if(wanted){error=Text.t("Selected location is unavailable. Choose another location.","所选线路暂不可用，请换一条。");state="Reconnecting…";}}});
+   if(wanted&&!closing.get())execute(()->{if(!wanted)return;state="Connecting…";fallback=false;error="";try{connect();}catch(Exception e){if(wanted){error=Text.t("Selected location is unavailable. Choose another location.","所选线路暂不可用，请换一条。");state="Reconnecting…";}}});
    return START_NOT_STICKY;
   }
   if(BuildConfig.DEBUG && intent!=null && "TEST_CONNECT".equals(intent.getAction()))testConfig=intent.getStringExtra("fixture");
@@ -83,7 +85,7 @@ public final class TunnelService extends VpnService implements Native {
   return START_NOT_STICKY;
  }
  private void begin(){
-  wanted=true;needsSignIn=false;state="Connecting…";error="";failures=0;ticks=0;shownState="";
+  wanted=true;needsSignIn=false;state="Connecting…";error="";failures=0;ticks=0;fallback=false;shownState="";
   worker=Executors.newSingleThreadScheduledExecutor();
   connectivity=getSystemService(ConnectivityManager.class);
   // If tracking cannot be registered, health checks still run; "offline" is only trusted when tracking works.
@@ -103,8 +105,17 @@ public final class TunnelService extends VpnService implements Native {
     // Offline: keep the tunnel and wait. Rebuilding it cannot help and leaks traffic during each rebuild.
     if(networkTracked&&underlying==null&&testConfig==null){state="Waiting for network…";failures=0;return;}
     boolean healthy=tunnelReady&&probe();if(!wanted)return;
-    if(healthy){failures=0;state="Connected";error="";}
-    else if(!tunnelReady||++failures>=3){state="Reconnecting…";connect();failures=0;}
+    if(healthy){
+     failures=0;state="Connected";if(!fallback)error="";
+     // About every 3 minutes with the screen on, see whether the chosen location answers again.
+     if(fallback&&++fallbackChecks%12==0&&probeChosen()){fallback=false;error="";connect();}
+    }
+    else if(!tunnelReady||++failures>=3){
+     state="Reconnecting…";failures=0;
+     // A chosen location that keeps failing gives way to the others; if they fail too, the chosen one is tried again.
+     if(testConfig==null&&!Locations.selected(this).isEmpty()){fallback=!fallback;fallbackChecks=0;error=fallback?Text.t("Your chosen location is unavailable, so the fastest working one is used for now. It switches back when it recovers.","所选线路暂不可用，已临时改用最快的可用线路，恢复后自动切回。"):"";}
+     connect();
+    }
    }catch(Exception e){
     if(!wanted)return;
     // Startup / failed recovery stays wanted; the next scheduled probe retries it.
@@ -112,7 +123,7 @@ public final class TunnelService extends VpnService implements Native {
  }
  private void closeTun(){try{if(tun!=null)tun.close();}catch(Exception ignored){}finally{tun=null;}}
  private void connect()throws Exception{
-  String config=testConfig!=null?testConfig:Locations.configure(this,LinkStore.config(this));
+  String config=testConfig!=null?testConfig:Locations.configure(this,LinkStore.config(this),fallback);
   synchronized(lifecycle){
    if(!wanted)return;
    tunnelReady=false;try{engine.stop();}finally{closeTun();}
@@ -125,6 +136,14 @@ public final class TunnelService extends VpnService implements Native {
    }catch(Exception failure){tunnelReady=false;try{engine.stop();}finally{closeTun();}throw failure;}
   }
   boolean healthy=probe();if(wanted)state=healthy?"Connected":"Reconnecting…";
+ }
+ private boolean probeChosen(){
+  java.net.HttpURLConnection connection=null;
+  try{
+   connection=(java.net.HttpURLConnection)new java.net.URL(Locations.CHECK_URL).openConnection();activeProbe=connection;
+   connection.setConnectTimeout(5000);connection.setReadTimeout(5000);connection.setInstanceFollowRedirects(false);
+   return wanted&&tunnelReady&&connection.getResponseCode()==204;
+  }catch(Exception e){return false;}finally{if(connection!=null)connection.disconnect();if(activeProbe==connection)activeProbe=null;}
  }
  private boolean probe(){
   // Ordinary Internet access must never masquerade as a working VPN after failed startup.

@@ -20,6 +20,8 @@ public sealed class SimpleSettings
     public DateTimeOffset? LastUpdateCheck { get; set; }
     /// <summary>Connect automatically when the app opens, using the last location choice.</summary>
     public bool AutoConnect { get; set; }
+    /// <summary>When a chosen location stops working, use the fastest working one until it recovers.</summary>
+    public bool Fallback { get; set; } = true;
     /// <summary>"auto" follows the system language; "zh" or "en" pins it.</summary>
     public string Language { get; set; } = "auto";
     public Dictionary<string, SubscriptionUsage> SubscriptionUsage { get; set; } = new();

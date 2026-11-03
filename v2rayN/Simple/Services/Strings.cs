@@ -23,6 +23,8 @@ public static class Strings
     public static string LaunchAtLoginDetail => Ui.T("Starts quietly in the menu bar.", "开机后在后台静默运行。");
     public static string AutoConnect => Ui.T("Connect when opened", "打开后自动连接");
     public static string AutoConnectDetail => Ui.T("Uses your last location choice.", "使用上次选择的线路。");
+    public static string Fallback => Ui.T("Switch when a location fails", "线路不可用时自动切换");
+    public static string FallbackDetail => Ui.T("If your chosen location stops working, the fastest working one is used until it recovers.", "选定的线路连不上时，临时改用最快的可用线路，恢复后自动切回。");
     public static string Language => Ui.T("Language", "语言");
     public static string LanguageAuto => Ui.T("System", "跟随系统");
     public static string LanguageRestart => Ui.T("Takes effect after reopening the app.", "重新打开 App 后生效。");

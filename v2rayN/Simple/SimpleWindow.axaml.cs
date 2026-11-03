@@ -327,6 +327,7 @@ public partial class SimpleWindow : Window
             LaunchAtLoginSwitch.IsEnabled = LaunchAtLogin.Supported;
             LaunchAtLoginSwitch.IsChecked = LaunchAtLogin.Supported && LaunchAtLogin.IsEnabled();
             AutoConnectSwitch.IsChecked = _client.Settings.AutoConnect;
+            FallbackSwitch.IsChecked = _client.Settings.Fallback;
             LanguageBox.ItemsSource = new[] { Strings.LanguageAuto, "中文", "English" };
             LanguageBox.SelectedIndex = _client.Settings.Language switch { "zh" => 1, "en" => 2, _ => 0 };
             SettingsFeedback.Text = "";
@@ -349,6 +350,11 @@ public partial class SimpleWindow : Window
     {
         if (_loadingSettings) return;
         _client.Settings.AutoConnect = AutoConnectSwitch.IsChecked == true; _client.Settings.Save();
+    }
+    private void FallbackChanged(object? sender, RoutedEventArgs args)
+    {
+        if (_loadingSettings) return;
+        _client.Settings.Fallback = FallbackSwitch.IsChecked == true; _client.Settings.Save();
     }
     private void LanguageChanged(object? sender, SelectionChangedEventArgs args)
     {

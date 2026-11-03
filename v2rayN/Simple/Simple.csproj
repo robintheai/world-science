@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <AssemblyName>WorldScience</AssemblyName>
     <RootNamespace>WorldScience</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Product>World Science</Product>
     <Title>World Science</Title>
     <Description>World Science</Description>
