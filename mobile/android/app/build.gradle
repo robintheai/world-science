@@ -1,0 +1,26 @@
+plugins { id 'com.android.application' }
+// Release builds pass the published package identity; local builds use the defaults below.
+def releaseId = providers.gradleProperty('releaseApplicationId').orElse('io.github.robintheai.worldscience').get()
+def storeAlias = providers.gradleProperty('releaseStoreAlias').orElse('world-science.subscriptions').get()
+def selectedAbis = providers.gradleProperty('abis').orElse('arm64-v8a,x86_64').get().split(',') as List
+if (!selectedAbis || selectedAbis.any { !(it in ['arm64-v8a', 'x86_64']) }) {
+ throw new GradleException('abis must contain arm64-v8a and/or x86_64')
+}
+android {
+ namespace 'io.github.robintheai.worldscience'
+ sourceSets { androidTest.java.setSrcDirs(['src/linkTest/java']) }
+ buildFeatures { buildConfig true }
+ compileSdk 35
+ defaultConfig { applicationId releaseId; buildConfigField 'String', 'STORE_ALIAS', "\"${storeAlias}\""; minSdk 26; targetSdk 35; versionCode 4; versionName '1.0.3'; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
+ // Ship compressed libraries and let Android extract the device ABI at install time.
+ // This avoids depending on in-APK native-library mapping for website APK installs.
+ packaging { jniLibs { useLegacyPackaging = true } }
+ defaultConfig { ndk { abiFilters.addAll(selectedAbis) } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ buildTypes { debug { applicationIdSuffix '.preview' }; release { minifyEnabled false } }
+}
+dependencies {
+ implementation files('libs/mobilecore.aar')
+ androidTestImplementation 'androidx.test:runner:1.6.2'
+ androidTestImplementation 'junit:junit:4.13.2'
+}

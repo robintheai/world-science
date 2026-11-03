@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ResourceDictionary.ThemeDictionaries>
+  <ResourceDictionary x:Key="Light">
+   <SolidColorBrush x:Key="Label">#202124</SolidColorBrush>
+   <SolidColorBrush x:Key="SecondaryLabel">#5A5D64</SolidColorBrush>
+   <SolidColorBrush x:Key="GlassFill">#EEF8F8FA</SolidColorBrush>
+   <LinearGradientBrush x:Key="PopoverFill" StartPoint="0%,0%" EndPoint="0%,100%"><GradientStop Color="#FCFCFE" Offset="0"/><GradientStop Color="#F1F1F5" Offset="1"/></LinearGradientBrush>
+   <SolidColorBrush x:Key="GlassEdge">#E6FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="ControlHover">#12000000</SolidColorBrush>
+   <SolidColorBrush x:Key="ControlSelected">#18000000</SolidColorBrush>
+   <SolidColorBrush x:Key="FieldFill">#60FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="FieldEdge">#26000000</SolidColorBrush>
+   <SolidColorBrush x:Key="CanvasFallback">#F3F3F5</SolidColorBrush>
+   <SolidColorBrush x:Key="Positive">#1E9E4A</SolidColorBrush>
+   <SolidColorBrush x:Key="PositiveSoft">#1F34C759</SolidColorBrush>
+   <SolidColorBrush x:Key="Caution">#C46A00</SolidColorBrush>
+   <SolidColorBrush x:Key="CautionSoft">#22FF9F0A</SolidColorBrush>
+   <SolidColorBrush x:Key="Negative">#D7372C</SolidColorBrush>
+   <SolidColorBrush x:Key="Track">#16000000</SolidColorBrush>
+  </ResourceDictionary>
+  <ResourceDictionary x:Key="Dark">
+   <SolidColorBrush x:Key="Label">#F4F4F6</SolidColorBrush>
+   <SolidColorBrush x:Key="SecondaryLabel">#B3B4BA</SolidColorBrush>
+   <SolidColorBrush x:Key="GlassFill">#EE35363B</SolidColorBrush>
+   <LinearGradientBrush x:Key="PopoverFill" StartPoint="0%,0%" EndPoint="0%,100%"><GradientStop Color="#38393E" Offset="0"/><GradientStop Color="#292A2F" Offset="1"/></LinearGradientBrush>
+   <SolidColorBrush x:Key="GlassEdge">#45FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="ControlHover">#18FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="ControlSelected">#24FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="FieldFill">#0CFFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="FieldEdge">#38FFFFFF</SolidColorBrush>
+   <SolidColorBrush x:Key="CanvasFallback">#242529</SolidColorBrush>
+   <SolidColorBrush x:Key="Positive">#30D158</SolidColorBrush>
+   <SolidColorBrush x:Key="PositiveSoft">#2630D158</SolidColorBrush>
+   <SolidColorBrush x:Key="Caution">#FFB340</SolidColorBrush>
+   <SolidColorBrush x:Key="CautionSoft">#26FF9F0A</SolidColorBrush>
+   <SolidColorBrush x:Key="Negative">#FF6961</SolidColorBrush>
+   <SolidColorBrush x:Key="Track">#1EFFFFFF</SolidColorBrush>
+  </ResourceDictionary>
+ </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

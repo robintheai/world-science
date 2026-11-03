@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../v2rayN/Simple/Services/SubscriptionLocations.cs" Link="SubscriptionLocations.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/CompactMenuTraffic.cs" Link="CompactMenuTraffic.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/CountryLocation.cs" Link="CountryLocation.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/LatencyBenchmark.cs" Link="LatencyBenchmark.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/ConnectivityProbe.cs" Link="ConnectivityProbe.cs"/>
+    <Compile Include="../../v2rayN/ServiceLib/Manager/MacTunSupervisor.cs" Link="MacTunSupervisor.cs"/>
+    <Compile Include="../../v2rayN/ServiceLib/Manager/MacAuthorizationPromptGate.cs" Link="MacAuthorizationPromptGate.cs"/>
+    <Compile Include="../../v2rayN/ServiceLib/Manager/MacPersistentTun.cs" Link="MacPersistentTun.cs"/>
+    <Compile Include="../../v2rayN/ServiceLib/Manager/MacTunDns.cs" Link="MacTunDns.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/SystemTrafficMonitor.cs" Link="SystemTrafficMonitor.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/ReleaseUpdater.cs" Link="ReleaseUpdater.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/StreamingBenchmark.cs" Link="StreamingBenchmark.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/Ui.cs" Link="Ui.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/OtherVpnClients.cs" Link="OtherVpnClients.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/HealthPolicy.cs" Link="HealthPolicy.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/SubscriptionUsage.cs" Link="SubscriptionUsage.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/ServiceAvailability.cs" Link="ServiceAvailability.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/Diagnostics.cs" Link="Diagnostics.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/LaunchAtLogin.cs" Link="LaunchAtLogin.cs"/>
+    <Compile Include="../../v2rayN/Simple/Services/SubscriptionFormats.cs" Link="SubscriptionFormats.cs"/>
+  </ItemGroup>
+  <ItemGroup><PackageReference Include="YamlDotNet" Version="18.1.0"/></ItemGroup>
+</Project>

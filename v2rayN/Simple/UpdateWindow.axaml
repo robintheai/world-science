@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:WorldScience.Controls" x:Class="WorldScience.UpdateWindow"
+ Title="Software update" Width="360" Height="280" CanResize="False" ShowInTaskbar="False" WindowDecorations="None" WindowStartupLocation="CenterScreen" Background="Transparent" TransparencyLevelHint="Transparent" TransparencyBackgroundFallback="{DynamicResource CanvasFallback}">
+ <Window.Styles>
+  <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Label}"/></Style>
+  <Style Selector="Button"><Setter Property="CornerRadius" Value="20"/><Setter Property="HorizontalAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="MinHeight" Value="40"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="Medium"/><Setter Property="BorderThickness" Value="0"/></Style>
+  <Style Selector="Button.secondary"><Setter Property="Background" Value="{DynamicResource ControlSelected}"/><Setter Property="Foreground" Value="{DynamicResource Label}"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource Label}"/><Setter Property="Foreground" Value="{DynamicResource CanvasFallback}"/></Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource SecondaryLabel}"/><Setter Property="TextElement.Foreground" Value="{DynamicResource CanvasFallback}"/></Style>
+ </Window.Styles>
+ <controls:GlassSurface ContrastTint="True" CornerRadius="26" Background="{DynamicResource GlassFill}" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1" Padding="24">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+   <Path Data="M 18,10 H 72 C 80,10 84,18 78,24 L 34,58 H 74 C 86,58 86,76 74,76 H 16 C 8,76 4,67 12,60 L 56,28 H 18 C 6,28 6,10 18,10 Z" Width="29" Height="26" Stretch="Uniform" Fill="{DynamicResource Label}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+   <TextBlock Grid.Row="1" x:Name="Heading" Text="Update available" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+   <TextBlock Grid.Row="2" x:Name="VersionLabel" FontSize="13" Foreground="{DynamicResource SecondaryLabel}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+   <StackPanel Grid.Row="3" VerticalAlignment="Center" Spacing="10">
+    <TextBlock x:Name="StatusLabel" Text="Your subscriptions and locations stay saved." TextWrapping="Wrap" TextAlignment="Center" FontSize="13" LineHeight="19" Foreground="{DynamicResource Label}"/>
+    <ProgressBar x:Name="DownloadProgress" IsVisible="False" Minimum="0" Maximum="100" Height="4" Foreground="{DynamicResource Label}" Background="{DynamicResource FieldEdge}"/>
+   </StackPanel>
+   <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="10">
+    <Button x:Name="LaterButton" Classes="secondary" Content="Not now" Click="LaterClick"/>
+    <Button x:Name="UpdateButton" Grid.Column="1" Classes="primary" Content="Update" Click="UpdateClick"/>
+   </Grid>
+  </Grid>
+ </controls:GlassSurface>
+</Window>

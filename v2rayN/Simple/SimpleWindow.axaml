@@ -1,0 +1,169 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:WorldScience.Controls" xmlns:s="clr-namespace:WorldScience.Services" x:Class="WorldScience.SimpleWindow"
+ Title="World Science" Width="380" Height="650" CanResize="False" WindowStartupLocation="CenterScreen" Background="Transparent" TransparencyLevelHint="AcrylicBlur, Blur" TransparencyBackgroundFallback="{DynamicResource CanvasFallback}">
+ <Window.Resources>
+  <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+  <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
+  <SolidColorBrush x:Key="TextControlBorderBrushPointerOver">Transparent</SolidColorBrush>
+  <SolidColorBrush x:Key="TextControlBackgroundFocused">Transparent</SolidColorBrush>
+  <SolidColorBrush x:Key="TextControlBackgroundPointerOver">Transparent</SolidColorBrush>
+ </Window.Resources>
+ <Window.Styles>
+  <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Label}"/></Style>
+  <Style Selector="TextBlock.secondary"><Setter Property="Foreground" Value="{DynamicResource SecondaryLabel}"/><Setter Property="FontSize" Value="12"/><Setter Property="LineHeight" Value="18"/></Style>
+  <Style Selector="Button"><Setter Property="CornerRadius" Value="22"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Foreground" Value="{DynamicResource Label}"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource Label}"/><Setter Property="Foreground" Value="{DynamicResource CanvasFallback}"/><Setter Property="MinHeight" Value="42"/><Setter Property="BorderThickness" Value="0"/><Setter Property="FontSize" Value="14"/><Setter Property="FontWeight" Value="Medium"/></Style>
+  <Style Selector="Button.link"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="Medium"/><Setter Property="Padding" Value="16,10"/></Style>
+  <Style Selector="TextBox"><Setter Property="Foreground" Value="{DynamicResource Label}"/><Setter Property="WatermarkForeground" Value="{DynamicResource SecondaryLabel}"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="MinHeight" Value="44"/><Setter Property="Padding" Value="10,10"/><Setter Property="FontSize" Value="13"/></Style>
+  <Style Selector="Border.input"><Setter Property="CornerRadius" Value="12"/><Setter Property="BorderBrush" Value="{DynamicResource FieldEdge}"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Background" Value="{DynamicResource FieldFill}"/><Setter Property="Padding" Value="8,0"/></Style>
+  <Style Selector="Border.input:focus-within"><Setter Property="BorderBrush" Value="{DynamicResource SecondaryLabel}"/></Style>
+  <Style Selector="TextBox"><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="CaretBrush" Value="{DynamicResource Label}"/></Style>
+  <Style Selector="TextBox /template/ Border#PART_BorderElement"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/></Style>
+  <Style Selector="Button.power"><Setter Property="Padding" Value="0"/><Setter Property="Template"><ControlTemplate><controls:GlassSurface CornerRadius="72" Background="{DynamicResource GlassFill}" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1"><ContentPresenter Name="DialContent" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/></controls:GlassSurface></ControlTemplate></Setter></Style>
+  <Style Selector="TextBlock.dialLabel"><Setter Property="Foreground" Value="#2B2E3A"/></Style>
+  <Style Selector="TextBlock.dialLabel.night, TextBlock.dialLabel.dusk"><Setter Property="Foreground" Value="#F4F4F6"/></Style>
+  <Style Selector="Button.power:pointerover /template/ ContentPresenter#DialContent"><Setter Property="Opacity" Value="0.9"/></Style>
+  <Style Selector="Button.power:pressed /template/ ContentPresenter#DialContent"><Setter Property="Opacity" Value="0.75"/></Style>
+  <Style Selector="Button.locationTrigger"><Setter Property="Template"><ControlTemplate><controls:GlassSurface CornerRadius="20" Background="{DynamicResource GlassFill}" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1" Padding="18,10"><ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/></controls:GlassSurface></ControlTemplate></Setter></Style>
+  <Style Selector="Button.locationTrigger:pointerover"><Setter Property="Foreground" Value="{DynamicResource SecondaryLabel}"/></Style>
+  <Style Selector="Border.card"><Setter Property="CornerRadius" Value="16"/><Setter Property="Background" Value="{DynamicResource FieldFill}"/><Setter Property="BorderBrush" Value="{DynamicResource FieldEdge}"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="14,12"/></Style>
+  <Style Selector="Border.chip"><Setter Property="CornerRadius" Value="11"/><Setter Property="Padding" Value="8,3"/><Setter Property="Background" Value="{DynamicResource Track}"/></Style>
+  <Style Selector="Border.chip.ok"><Setter Property="Background" Value="{DynamicResource PositiveSoft}"/></Style>
+  <Style Selector="Border.chip.partial"><Setter Property="Background" Value="{DynamicResource CautionSoft}"/></Style>
+  <Style Selector="Border.chip.ok TextBlock.mark"><Setter Property="Foreground" Value="{DynamicResource Positive}"/></Style>
+  <Style Selector="Border.chip.partial TextBlock.mark"><Setter Property="Foreground" Value="{DynamicResource Caution}"/></Style>
+  <Style Selector="Border.chip.bad TextBlock.mark"><Setter Property="Foreground" Value="{DynamicResource Negative}"/></Style>
+  <Style Selector="Ellipse.status"><Setter Property="Fill" Value="{DynamicResource SecondaryLabel}"/></Style>
+  <Style Selector="Ellipse.status.on"><Setter Property="Fill" Value="{DynamicResource Positive}"/></Style>
+  <Style Selector="ProgressBar.usage"><Setter Property="Foreground" Value="{DynamicResource Positive}"/><Setter Property="Background" Value="{DynamicResource Track}"/><Setter Property="MinHeight" Value="5"/><Setter Property="Height" Value="5"/><Setter Property="CornerRadius" Value="3"/></Style>
+  <Style Selector="ProgressBar.usage.attention"><Setter Property="Foreground" Value="{DynamicResource Caution}"/></Style>
+  <Style Selector="TextBlock.warning"><Setter Property="Foreground" Value="{DynamicResource Caution}"/></Style>
+  <Style Selector="Button.icon"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="6"/><Setter Property="CornerRadius" Value="14"/><Setter Property="MinWidth" Value="30"/><Setter Property="MinHeight" Value="30"/></Style>
+ </Window.Styles>
+ <Grid x:Name="RootGrid" RowDefinitions="Auto,*,Auto" ClipToBounds="True">
+  <Grid ColumnDefinitions="40,*,40" Margin="12,14,12,4">
+   <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+    <TextBlock Text="World Science" FontSize="17" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center"/>
+    <Button x:Name="VersionBadge" Classes="link" Click="CheckUpdatesClick" FontSize="12" FontWeight="SemiBold" Padding="9,4" MinHeight="28" Background="{DynamicResource FieldFill}" AutomationProperties.Name="Current version. Check for updates"/>
+   </StackPanel>
+   <Button x:Name="SettingsButton" Grid.Column="2" Classes="icon" Click="SettingsClick" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="{x:Static s:Strings.Settings}" AutomationProperties.Name="{x:Static s:Strings.Settings}">
+    <Path Width="17" Height="17" Stretch="Uniform" Stroke="{DynamicResource SecondaryLabel}" StrokeThickness="1.4" StrokeLineCap="Round" Data="M 3,5 H 17 M 3,10 H 17 M 3,15 H 17 M 7,3 V 7 M 13,8 V 12 M 9,13 V 17"/>
+   </Button>
+  </Grid>
+  <Border x:Name="SubscriptionPanel" Grid.Row="1" Margin="24,14,24,20" IsVisible="False">
+   <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+    <Button Classes="link" Content="{x:Static s:Strings.Back}" Click="SubscriptionBackClick" HorizontalAlignment="Left" Padding="0,8"/>
+    <StackPanel Grid.Row="1" Spacing="14">
+     <TextBlock Text="{x:Static s:Strings.YourSubscriptions}" FontSize="23" FontWeight="SemiBold"/>
+     <TextBlock Text="{x:Static s:Strings.SubscriptionIntro}" Classes="secondary"/>
+     <Border Classes="input"><TextBox x:Name="SubscriptionInput" PlaceholderText="{x:Static s:Strings.SubscriptionPlaceholder}" MaxLength="1048576" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="120" AutomationProperties.Name="Subscription URL"/></Border>
+     <Button x:Name="ImportButton" Classes="primary" Content="{x:Static s:Strings.AddSubscription}" HorizontalAlignment="Stretch" Click="ImportSubscriptionClick"/>
+     <TextBlock x:Name="SubscriptionFeedback" Classes="secondary" TextWrapping="Wrap" MaxHeight="64"/>
+    </StackPanel>
+    <ScrollViewer Grid.Row="2"><StackPanel x:Name="SubscriptionList" Spacing="10"/></ScrollViewer>
+    <TextBlock Grid.Row="3" Text="{x:Static s:Strings.NoAccountNeeded}" Classes="secondary" HorizontalAlignment="Center"/>
+   </Grid>
+  </Border>
+  <Border x:Name="SettingsPanel" Grid.Row="1" Margin="24,14,24,20" IsVisible="False">
+   <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16">
+    <Button Classes="link" Content="{x:Static s:Strings.Back}" Click="SubscriptionBackClick" HorizontalAlignment="Left" Padding="0,8"/>
+    <TextBlock Grid.Row="1" Text="{x:Static s:Strings.Settings}" FontSize="23" FontWeight="SemiBold"/>
+    <ScrollViewer Grid.Row="2"><StackPanel Spacing="12">
+     <Border Classes="card"><Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.LaunchAtLogin}" FontSize="13" FontWeight="Medium"/><TextBlock Text="{x:Static s:Strings.LaunchAtLoginDetail}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
+      <ToggleSwitch x:Name="LaunchAtLoginSwitch" Grid.Column="1" OnContent="" OffContent="" IsCheckedChanged="LaunchAtLoginChanged" VerticalAlignment="Center"/>
+     </Grid></Border>
+     <Border Classes="card"><Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.AutoConnect}" FontSize="13" FontWeight="Medium"/><TextBlock Text="{x:Static s:Strings.AutoConnectDetail}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
+      <ToggleSwitch x:Name="AutoConnectSwitch" Grid.Column="1" OnContent="" OffContent="" IsCheckedChanged="AutoConnectChanged" VerticalAlignment="Center"/>
+     </Grid></Border>
+     <Border Classes="card"><Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.Language}" FontSize="13" FontWeight="Medium"/><TextBlock x:Name="LanguageNote" Text="{x:Static s:Strings.LanguageRestart}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
+      <ComboBox x:Name="LanguageBox" Grid.Column="1" SelectionChanged="LanguageChanged" VerticalAlignment="Center" MinWidth="110"/>
+     </Grid></Border>
+     <Button x:Name="DiagnosticsButton" Classes="link" Click="ExportDiagnosticsClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="14,12" CornerRadius="16" Background="{DynamicResource FieldFill}" BorderBrush="{DynamicResource FieldEdge}" BorderThickness="1">
+      <StackPanel Spacing="3"><TextBlock Text="{x:Static s:Strings.ExportDiagnostics}" FontSize="13" FontWeight="Medium"/><TextBlock Text="{x:Static s:Strings.ExportDiagnosticsDetail}" Classes="secondary" FontSize="11" TextWrapping="Wrap"/></StackPanel>
+     </Button>
+     <Button Classes="link" Content="{x:Static s:Strings.CheckUpdates}" Click="CheckUpdatesClick" HorizontalAlignment="Center"/>
+     <TextBlock x:Name="SettingsFeedback" Classes="secondary" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+    </StackPanel></ScrollViewer>
+   </Grid>
+  </Border>
+  <Border x:Name="HomePanel" Grid.Row="1" IsVisible="False" Margin="0,0,0,12">
+   <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+   <StackPanel Spacing="14" Margin="24,0,24,0">
+    <StackPanel Spacing="6">
+     <Grid x:Name="ConnectionDial" Width="164" Height="164" HorizontalAlignment="Center" Margin="0,0,0,6">
+      <controls:ConnectionHalo Connected="{Binding Connected}" Pending="{Binding ConnectionPending}" Focused="{Binding IsKeyboardFocusWithin, ElementName=PowerButton}" IsHitTestVisible="False"/>
+      <Button x:Name="PowerButton" Classes="power" FocusAdorner="{x:Null}" Classes.connected="{Binding Connected}" Width="144" Height="144" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ConnectClick" AutomationProperties.Name="{Binding PowerLabel}">
+       <Grid Width="142" Height="142">
+        <controls:OwlDial Connected="{Binding Connected}" Pending="{Binding ConnectionPending}" IsHitTestVisible="False"/>
+        <TextBlock Classes="dialLabel" Classes.night="{Binding Connected}" Classes.dusk="{Binding ConnectionPending}" Text="{Binding PowerShortLabel}" FontSize="13" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20"/>
+       </Grid>
+      </Button>
+     </Grid>
+     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+      <Ellipse Classes="status" Classes.on="{Binding Connected}" Width="8" Height="8" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding ConnectionStatus}" FontSize="20" FontWeight="Medium"/>
+     </StackPanel>
+     <TextBlock x:Name="SelectedLocation" Text="{Binding ConnectionHint}" ToolTip.Tip="{Binding ConnectionHint}" MaxWidth="330" TextTrimming="CharacterEllipsis" Classes="secondary" FontSize="13" HorizontalAlignment="Center"/>
+     <TextBlock x:Name="SessionDetail" Text="{Binding SessionDetail}" IsVisible="{Binding Connected}" Classes="secondary" FontSize="12" HorizontalAlignment="Center" FontFeatures="tnum"/>
+    </StackPanel>
+    <StackPanel Spacing="4" HorizontalAlignment="Center">
+     <Button x:Name="LocationButton" Classes="link locationTrigger" Click="ChooseLocationClick" IsEnabled="{Binding CanChooseLocation}" HorizontalAlignment="Center" AutomationProperties.Name="Choose Automatic or a specific VPN location">
+      <Grid ColumnDefinitions="16,*,10" ColumnSpacing="12">
+       <Path Width="16" Height="16" Stretch="Uniform" Stroke="{DynamicResource SecondaryLabel}" StrokeThickness="1.2" Data="M 8,1 A 7,7 0 1 1 7.99,1 M 1,8 H 15 M 8,1 C 3.5,5 3.5,11 8,15 C 12.5,11 12.5,5 8,1"/>
+       <TextBlock Grid.Column="1" Text="{x:Static s:Strings.ChooseLocation}" FontSize="13"/>
+       <Path Grid.Column="2" Width="8" Height="4" Stretch="Uniform" Stroke="{DynamicResource SecondaryLabel}" StrokeThickness="1.3" StrokeLineCap="Round" Data="M 0,0 L 4,4 L 8,0" VerticalAlignment="Center"/>
+      </Grid>
+     </Button>
+     <Button x:Name="UpdateNodesButton" Classes="link" Click="UpdateNodesClick" Content="{Binding UpdateNodesLabel}" IsEnabled="{Binding CanUpdateNodes}" HorizontalAlignment="Center" Padding="12,4" MinHeight="28" FontSize="12" AutomationProperties.Name="Update subscription nodes and rank by download speed"/>
+    </StackPanel>
+    <Grid ColumnDefinitions="*,Auto,*" Width="260" HorizontalAlignment="Center" ToolTip.Tip="Device network traffic while connected">
+     <StackPanel Spacing="4" HorizontalAlignment="Center">
+      <TextBlock Text="{x:Static s:Strings.Download}" Classes="secondary" FontSize="11" HorizontalAlignment="Center"/>
+      <TextBlock x:Name="DownloadValue" Text="{Binding LiveDownloadRate}" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" FontFeatures="tnum"/>
+     </StackPanel>
+     <Border Grid.Column="1" Width="1" Height="27" Background="{DynamicResource FieldEdge}" VerticalAlignment="Center"/>
+     <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Center">
+      <TextBlock Text="{x:Static s:Strings.Upload}" Classes="secondary" FontSize="11" HorizontalAlignment="Center"/>
+      <TextBlock x:Name="UploadValue" Text="{Binding LiveUploadRate}" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" FontFeatures="tnum"/>
+     </StackPanel>
+    </Grid>
+    <Button x:Name="AvailabilityCard" Classes="link" IsVisible="{Binding ShowAvailability}" Click="AvailabilityClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="12,10" CornerRadius="16" Background="{DynamicResource FieldFill}" BorderBrush="{DynamicResource FieldEdge}" BorderThickness="1" ToolTip.Tip="{x:Static s:Strings.ServiceCheckHint}">
+     <StackPanel Spacing="8">
+      <TextBlock Text="{Binding AvailabilityTitle}" Classes="secondary" FontSize="11" HorizontalAlignment="Center"/>
+      <ItemsControl ItemsSource="{Binding ServiceChips}" HorizontalAlignment="Center">
+       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+       <ItemsControl.ItemTemplate><DataTemplate>
+        <Border Classes="chip" Classes.ok="{Binding IsAvailable}" Classes.partial="{Binding IsPartial}" Classes.bad="{Binding IsUnavailable}" Margin="3" ToolTip.Tip="{Binding Tip}">
+         <StackPanel Orientation="Horizontal" Spacing="4">
+          <TextBlock Classes="mark" Text="{Binding Symbol}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding Name}" FontSize="11" VerticalAlignment="Center"/>
+         </StackPanel>
+        </Border>
+       </DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+     </StackPanel>
+    </Button>
+    <Button x:Name="SubscriptionButton" Classes="link" Click="SubscriptionsClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="14,12" CornerRadius="16" Background="{DynamicResource FieldFill}" BorderBrush="{DynamicResource FieldEdge}" BorderThickness="1">
+     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+      <StackPanel Spacing="5">
+       <TextBlock Text="{x:Static s:Strings.Subscriptions}" FontSize="13" FontWeight="Medium"/>
+       <TextBlock x:Name="SubscriptionDetails" Text="{x:Static s:Strings.AddSubscriptionHint}" Classes="secondary" FontSize="11"/>
+       <ProgressBar Classes="usage" Classes.attention="{Binding UsageNeedsAttention}" IsVisible="{Binding HasUsage}" Minimum="0" Maximum="100" Value="{Binding UsagePercent}" Margin="0,3,0,0"/>
+       <TextBlock Text="{Binding UsageSummary}" IsVisible="{Binding HasUsage}" Classes="secondary" Classes.warning="{Binding UsageNeedsAttention}" FontSize="11"/>
+      </StackPanel>
+      <TextBlock Grid.Column="1" Text="›" FontSize="21" VerticalAlignment="Center"/>
+     </Grid>
+    </Button>
+    <Button x:Name="CoffeeButton" Classes="link" Click="CoffeeClick" HorizontalAlignment="Center" Padding="12,6" MinHeight="32" AutomationProperties.Name="Buy me a coffee: support World Science on our website">
+     <StackPanel Orientation="Horizontal" Spacing="8"><controls:CoffeeMark Width="19" Height="19" Ink="{DynamicResource SecondaryLabel}"/><TextBlock Text="{x:Static s:Strings.BuyCoffee}" FontSize="12" Foreground="{DynamicResource SecondaryLabel}" VerticalAlignment="Center"/></StackPanel>
+    </Button>
+    <TextBlock Text="{Binding NodeUpdateStatus}" Classes="secondary" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+    <TextBlock x:Name="ServiceMessage" Text="" Classes="secondary" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+   </StackPanel>
+   </ScrollViewer>
+  </Border>
+  <TextBlock Grid.Row="2" IsVisible="{Binding HasNotice}" Text="{Binding UserNotice}" Classes="secondary" FontSize="11" LineHeight="16" MaxWidth="340" MaxHeight="50" TextAlignment="Center" TextWrapping="Wrap" Margin="26,0,26,10" HorizontalAlignment="Center"/>
+ </Grid>
+</Window>

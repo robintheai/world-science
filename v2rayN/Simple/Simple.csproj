@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>WorldScience</AssemblyName>
+    <RootNamespace>WorldScience</RootNamespace>
+    <Version>1.0.3</Version>
+    <Product>World Science</Product>
+    <Title>World Science</Title>
+    <Description>World Science</Description>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>Assets/simple.ico</ApplicationIcon>
+    <ApplicationManifest Condition="$([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">app.manifest</ApplicationManifest>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ServiceLib/ServiceLib.csproj" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="ReactiveUI.Avalonia" />
+    <AvaloniaResource Include="Assets/**" Exclude="Assets/vault/**" />
+    <Content Include="Assets/status.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/status-*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets/simple.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

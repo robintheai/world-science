@@ -1,0 +1,14 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Label}"/></Style>
+ <Style Selector="TextBlock.heading"><Setter Property="Foreground" Value="{DynamicResource SecondaryLabel}"/><Setter Property="FontSize" Value="12"/><Setter Property="FontWeight" Value="Medium"/></Style>
+ <Style Selector="Button.location">
+  <Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="{DynamicResource Label}"/>
+  <Setter Property="BorderThickness" Value="0"/><Setter Property="CornerRadius" Value="10"/>
+  <Setter Property="Padding" Value="10,9"/><Setter Property="Margin" Value="0,1"/>
+ </Style>
+ <Style Selector="Border.bar"><Setter Property="CornerRadius" Value="1"/><Setter Property="Background" Value="{DynamicResource Track}"/></Style>
+ <Style Selector="Border.bar.lit"><Setter Property="Background" Value="{DynamicResource Positive}"/></Style>
+ <Style Selector="Button.location.selected"><Setter Property="Background" Value="{DynamicResource ControlSelected}"/></Style>
+ <Style Selector="Button.location:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource ControlHover}"/></Style>
+ <Style Selector="Button.location:pressed /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource ControlSelected}"/></Style>
+</Styles>
