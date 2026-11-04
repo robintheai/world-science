@@ -139,6 +139,9 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
     private CancellationTokenSource? _connectCts;
     private readonly HealthPolicy _health = new();
     private bool _offline, _proxyFallback;
+    // Whether this Connect already tried system proxy after TUN failed; and whether TUN proved unusable on this PC
+    // during this run, so later Connects skip the slow TUN attempt until the app restarts.
+    private bool _proxyTried, _tunUnusable;
     private DateTimeOffset _lastHealth, _lastTick;
     private DateTimeOffset _nextRetry;
     private DateTimeOffset _lastRecoveryRefresh;
@@ -385,7 +388,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         _powerCts = transition;
         var disconnect = Connected || _wantConnected;
         _wantConnected = !disconnect;
-        if (!disconnect) { _proxyFallback = false; _offline = false; _health.Reset(); ConnectedSince = null; }
+        if (!disconnect) { _proxyFallback = _tunUnusable; _proxyTried = false; _offline = false; _health.Reset(); ConnectedSince = null; }
         Notice = "";
         NodeUpdateStatus = ""; Notify();
         try
@@ -495,17 +498,22 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             try
             {
                 try { await ConnectInternal(token); }
-                catch (TunStartException) when (OperatingSystem.IsWindows() && !_proxyFallback && !integrationTest && !token.IsCancellationRequested)
+                catch (Exception first) when (OperatingSystem.IsWindows() && !_proxyFallback && !_proxyTried && !integrationTest && !token.IsCancellationRequested
+                    && first is not MacNetworkAuthorizationException && ServiceLib.Common.Utils.IsAdministrator())
                 {
-                    // Security software often blocks the Wintun driver. System proxy still carries browsers and most apps.
-                    Logging.SaveLog("Simple.SmartConnect: TUN unavailable; retrying with system proxy");
+                    // Security software often blocks the Wintun driver, and on some PCs the adapter starts but its routes or
+                    // DNS never work. System proxy, v2rayN's default mode, still carries browsers and most apps there.
+                    // Tried once per Connect: if the node fails this way too, the node is the problem, not TUN.
+                    _proxyTried = true;
+                    Logging.SaveLog("Simple.SmartConnect: TUN did not connect; retrying this location with system proxy", first);
                     _proxyFallback = true;
                     await DisconnectInternal();
-                    await ConnectInternal(token);
+                    try { await ConnectInternal(token); _tunUnusable = true; }
+                    catch (Exception) when (first is not TunStartException) { _proxyFallback = false; await DisconnectInternal(); throw first; }
                 }
                 _health.Reset(); _offline = false; _recoveryAttempts = 0; _lastHealth = DateTimeOffset.UtcNow;
                 ConnectedSince ??= DateTimeOffset.UtcNow;
-                if (_proxyFallback) Notice = Ui.T("Connected with system proxy because the VPN adapter was blocked. Some apps may bypass it.", "VPN 虚拟网卡被拦截，已改用系统代理连接。浏览器可正常使用，少数软件可能不走代理。");
+                if (_proxyFallback) Notice = Ui.T("Global mode does not work on this PC, so World Science connected with system proxy. Browsers work; a few apps may bypass it.", "全局模式在这台电脑上连不通，已改用系统代理连接。浏览器可正常使用，少数软件可能不走代理。");
                 FallbackActive = fallback && !candidates.Contains(row);
                 if (FallbackActive)
                 {
