@@ -36,7 +36,8 @@ public final class LinkRecoveryTest {
    for(int i=0;i<40;i++){
     Thread.sleep(500);
     assertNotEquals("Failed engine must not appear connected", "Connected",TunnelService.state);
-    assertFalse("Failed startup must not leak a VPN interface",hasVpn());
+    // While reconnecting, the interface stays up and drops traffic instead of going direct.
+    if(i>=4)assertTrue("Failed startup must keep traffic inside the VPN interface",hasVpn());
    }
   } finally {stop();}
  }

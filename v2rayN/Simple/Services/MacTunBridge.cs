@@ -2,7 +2,7 @@ using ServiceLib.Models.CoreConfigs;
 
 namespace WorldScience.Services;
 
-/// <summary>A fixed privileged TUN bridge, with replaceable unprivileged outbound cores.</summary>
+/// <summary>A fixed privileged TUN bridge, with replaceable unprivileged outbound cores (macOS and Windows).</summary>
 internal static class MacTunBridge
 {
     internal static async Task<CoreConfigContextBuilderAllResult> Build(Config config, ProfileItem node, string? physicalInterface = null)
@@ -14,8 +14,10 @@ internal static class MacTunBridge
         outboundConfig.CoreBasicItem.EnableCacheFile4Sbox = false;
         // The selected-node socket must never be routed back into our privileged TUN.
         // Process-path exclusions alone are insufficient when another route is retained.
-        physicalInterface ??= await MacVpnConflict.FindPhysicalInterface();
-        if (string.IsNullOrWhiteSpace(physicalInterface))
+        // On Windows the bridge's process-path rule sends our cores directly; there is no interface to bind.
+        var bindPhysical = OperatingSystem.IsMacOS();
+        if (bindPhysical) physicalInterface ??= await MacVpnConflict.FindPhysicalInterface();
+        if (bindPhysical && string.IsNullOrWhiteSpace(physicalInterface))
             throw new InvalidOperationException("No active Wi-Fi or Ethernet connection was found. Connect to a network and try again.");
         outboundConfig.CoreBasicItem.BindInterface = "";
         outboundConfig.CoreBasicItem.SendThrough = "";
@@ -24,7 +26,7 @@ internal static class MacTunBridge
         // This split architecture deliberately has TUN in a separate process, so
         // bind the validated outbound context after building it.
         var boundConfig = JsonUtils.DeepCopy(main.Context.AppConfig);
-        boundConfig.CoreBasicItem.BindInterface = physicalInterface;
+        if (bindPhysical) boundConfig.CoreBasicItem.BindInterface = physicalInterface!;
         main = main with { Context = main.Context with { AppConfig = boundConfig, DisableClashApi = true } };
 
         var bridgeConfig = JsonUtils.DeepCopy(config);

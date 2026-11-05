@@ -11,7 +11,7 @@ android {
  sourceSets { androidTest.java.setSrcDirs(['src/linkTest/java']) }
  buildFeatures { buildConfig true }
  compileSdk 35
- defaultConfig { applicationId releaseId; buildConfigField 'String', 'STORE_ALIAS', "\"${storeAlias}\""; minSdk 26; targetSdk 35; versionCode 6; versionName '1.0.5'; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
+ defaultConfig { applicationId releaseId; buildConfigField 'String', 'STORE_ALIAS', "\"${storeAlias}\""; minSdk 26; targetSdk 35; versionCode 7; versionName '1.0.6'; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner' }
  // Ship compressed libraries and let Android extract the device ABI at install time.
  // This avoids depending on in-APK native-library mapping for website APK installs.
  packaging { jniLibs { useLegacyPackaging = true } }
