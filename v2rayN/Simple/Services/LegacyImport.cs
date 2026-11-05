@@ -2,7 +2,7 @@ using SQLite;
 namespace WorldScience.Services;
 
 /// <summary>
-/// World Science replaces earlier editions of this client, which kept their subscriptions in their own data folders.
+/// Owlpath replaces earlier editions of this client, which kept their subscriptions in their own data folders.
 /// On the first launch with no subscriptions, their saved links are offered to the normal importer.
 /// Only the links are read; their nodes and credentials are downloaded fresh and validated like a pasted link.
 /// </summary>

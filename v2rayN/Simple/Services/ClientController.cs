@@ -496,6 +496,9 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         if (fallback) available.AddRange((await RankCandidates(others.Where(n => !Cooling(n)).ToList(), token)).OrderBy(n => n.Country == ChosenCountry ? 0 : 1));
         // Every candidate failed recently: try them all again rather than give up.
         if (available.Count == 0) available = await RankCandidates([.. candidates, .. others], token);
+        // While the tunnel is held, our own TCP checks only reach the blocked tunnel, so ranking says nothing.
+        // Test the candidates through their own cores outside the tunnel and try the ones that work first.
+        if (KeepsTunnel) available = await ScreenCandidates(available, candidates, token);
         Exception? lastFailure = null;
         foreach (var row in available)
         {
@@ -600,11 +603,51 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         catch (Exception ex) when (!token.IsCancellationRequested) { Logging.SaveLog("Simple.Fallback: chosen location still unavailable", ex); return false; }
         finally { if (process is not null) { await process.StopAsync(); process.Dispose(); } }
     }
+    /// <summary>
+    /// Recovery screening: each candidate is tested end to end through its own core, outside the tunnel, a few at
+    /// a time. Working locations come first: the chosen ones, then the fastest. When some work, locations that
+    /// failed are skipped this round; when none answers, only the top few are tried before the next retry.
+    /// </summary>
+    private async Task<List<NodeRow>> ScreenCandidates(List<NodeRow> rows, List<NodeRow> preferred, CancellationToken token)
+    {
+        if (integrationTest || rows.Count <= 1) return rows;
+        var physicalInterface = OperatingSystem.IsMacOS() ? await MacVpnConflict.FindPhysicalInterface() : null;
+        if (OperatingSystem.IsMacOS() && physicalInterface is null) return rows;
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(token);
+        budget.CancelAfter(TimeSpan.FromSeconds(20));
+        using var limit = new SemaphoreSlim(4);
+        var results = await Task.WhenAll(rows.Take(24).Select(async (row, index) =>
+        {
+            try
+            {
+                await limit.WaitAsync(budget.Token);
+                try { return (Row: row, Delay: (double?)await ProbeNode(row, physicalInterface, 100 + index, budget.Token)); }
+                finally { limit.Release(); }
+            }
+            catch (Exception) when (!token.IsCancellationRequested) { return (Row: row, Delay: (double?)null); }
+        }));
+        token.ThrowIfCancellationRequested();
+        var working = results.Where(r => r.Delay is > 0).OrderBy(r => preferred.Contains(r.Row) ? 0 : 1).ThenBy(r => r.Delay).Select(r => r.Row).ToList();
+        Logging.SaveLog($"Simple.Recovery: {working.Count} of {results.Length} locations answered through their own core");
+        foreach (var failed in results.Where(r => r.Delay is not > 0)) _cooldowns[failed.Row.Id] = DateTimeOffset.UtcNow.AddMinutes(5);
+        return working.Count > 0 ? working : rows.Take(3).ToList();
+    }
+    private async Task<double> ProbeNode(NodeRow row, string? physicalInterface, int queue, CancellationToken token)
+    {
+        var (process, port) = await StartTestCore(row, physicalInterface, token, queue);
+        try
+        {
+            using var handler = new SocketsHttpHandler { Proxy = new WebProxy($"socks5://127.0.0.1:{port}"), UseProxy = true, AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(6) };
+            using var http = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
+            return await LatencyBenchmark.Measure(http, Config.SpeedTestItem.SpeedPingTestUrl, TimeSpan.FromSeconds(Math.Min(6, Settings.PingTimeoutSeconds)), token);
+        }
+        finally { await process.StopAsync(); process.Dispose(); }
+    }
     /// <summary>Starts a separate core for one location and waits until its local SOCKS port accepts connections.</summary>
-    private async Task<(ProcessService Process, int Port)> StartTestCore(NodeRow row, string? physicalInterface, CancellationToken token)
+    private async Task<(ProcessService Process, int Port)> StartTestCore(NodeRow row, string? physicalInterface, CancellationToken token, int queue = 0)
     {
         var item = new ServerTestItem { IndexId = row.Id, Profile = row.Profile, ConfigType = row.Profile.ConfigType,
-            CoreType = AppManager.Instance.GetCoreType(row.Profile, row.Profile.ConfigType), Port = row.Profile.Port };
+            CoreType = AppManager.Instance.GetCoreType(row.Profile, row.Profile.ConfigType), Port = row.Profile.Port, QueueNum = queue };
         var process = await CoreManager.Instance.LoadCoreConfigSpeedtest(item, includeSubChain: false, bindInterface: physicalInterface)
             ?? throw new InvalidOperationException("speed-test core did not start");
         try
@@ -805,7 +848,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         if (Settings.Tun && OperatingSystem.IsWindows() && !ServiceLib.Common.Utils.IsAdministrator())
         {
             _wantConnected = false;
-            throw new InvalidOperationException(Ui.T("Quit World Science, then right-click it and choose Run as administrator.", "请退出 World Science，再右键点击它，选择「以管理员身份运行」。"));
+            throw new InvalidOperationException(Ui.T("Quit Owlpath, then right-click it and choose Run as administrator.", "请退出 Owlpath，再右键点击它，选择「以管理员身份运行」。"));
         }
         if (!integrationTest)
         {

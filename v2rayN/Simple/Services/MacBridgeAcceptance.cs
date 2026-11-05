@@ -120,7 +120,7 @@ internal static class MacBridgeAcceptance
             var until = DateTime.UtcNow.AddSeconds(20);
             while (DateTime.UtcNow < until)
             {
-                var line = File.ReadAllLines(log).LastOrDefault(l => l.StartsWith("World Science tunnel child pid="));
+                var line = File.ReadAllLines(log).LastOrDefault(l => l.StartsWith("Owlpath tunnel child pid="));
                 if (line is not null && int.TryParse(line.Split('=').Last(), out var pid) && pid != previous)
                     try { using var response = await http.GetAsync($"http://127.0.0.1:{port}/version"); if (response.IsSuccessStatusCode) return pid; } catch (HttpRequestException) { } catch (TaskCanceledException) { }
                 await Task.Delay(100);

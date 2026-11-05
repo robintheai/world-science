@@ -83,7 +83,7 @@ rules:
             Check(window.Title!.Contains(version) && window.FindControl<Button>("VersionBadge")!.Content!.ToString() == "v" + version, "current version is visible in the window title and header");
             if (OperatingSystem.IsMacOS())
                 Check(NativeMenu.GetMenu(Application.Current!)!.Items.Contains(window.UpdateMenuItem!) && window.UpdateMenuItem!.Header == "Check for Updates…", "macOS application menu exposes Check for Updates");
-            Check(!typeof(SimpleWindow).Assembly.GetTypes().Any(t => t.Name.Contains("Account") || t.Name.Contains("Vault")), "no account sign-in or credential vault code is compiled into World Science");
+            Check(!typeof(SimpleWindow).Assembly.GetTypes().Any(t => t.Name.Contains("Account") || t.Name.Contains("Vault")), "no account sign-in or credential vault code is compiled into Owlpath");
             if (window.MacMenu is { } menu)
             {
                 menu.Update(client);
@@ -123,10 +123,10 @@ rules:
             Check(window.FindControl<TextBlock>("SubscriptionFeedback")!.Text!.Contains("stopped") && (await AppManager.Instance.SubItems()).Count == 1, "Cancel stops a slow download without adding an empty subscription");
             await client.Refresh();
             Check(client.AvailableLocations.Count() == 2, "catalog reload works without an account session");
-            Check(ReleaseUpdater.AssetName("macos", "arm64", new Version(1,0,0)).StartsWith("World-Science-"), "update package names are World Science's own");
+            Check(ReleaseUpdater.AssetName("macos", "arm64", new Version(1,0,0)).StartsWith("World-Science-"), "update package names are Owlpath's own");
             var rejected = false;
             try { ReleaseUpdater.EnsureAssetUrl("https://ai.z5a.com/clients/other/releases/v1.0.34/Other-1.0.34-macos-arm64.dmg"); } catch { rejected = true; }
-            Check(rejected, "packages outside World Science's mirror folder are rejected as an update source");
+            Check(rejected, "packages outside Owlpath's mirror folder are rejected as an update source");
             if (OperatingSystem.IsMacOS())
             {
                 var originalBinding = client.Config.CoreBasicItem.BindInterface;

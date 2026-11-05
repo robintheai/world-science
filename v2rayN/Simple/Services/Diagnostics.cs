@@ -22,10 +22,10 @@ internal static class Diagnostics
     {
         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         if (string.IsNullOrEmpty(desktop) || !Directory.Exists(desktop)) desktop = Path.GetTempPath();
-        var target = Path.Combine(desktop, $"World-Science-diagnostics-{DateTime.Now:yyyyMMdd-HHmm}.zip");
+        var target = Path.Combine(desktop, $"Owlpath-diagnostics-{DateTime.Now:yyyyMMdd-HHmm}.zip");
         using var archive = ZipFile.Open(target, ZipArchiveMode.Create);
         var summary = new StringBuilder()
-            .AppendLine($"World Science {version}")
+            .AppendLine($"Owlpath {version}")
             .AppendLine($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})")
             .AppendLine($"Exported: {DateTimeOffset.Now:O}")
             .AppendLine($"Network up: {NetworkState.PhysicalNetworkUp()}");

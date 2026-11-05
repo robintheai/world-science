@@ -14,7 +14,7 @@ Security boundaries:
 
 Validation: `tests/test_macos_helper.py` runs the actual helper unprivileged with an inert child and fake DNS actions. It covers reconnect, owner exit, reopening, core crash, helper crash, shutdown and malformed requests. It does not install a system daemon or exercise real TUN routes. Test path overrides are refused when running as root.
 
-To remove a production installation, first Disconnect and Quit World Science. A Mac administrator can then run the following for the affected account's numeric UID (normally obtained using `id -u ACCOUNT_NAME`):
+To remove a production installation, first Disconnect and Quit Owlpath. A Mac administrator can then run the following for the affected account's numeric UID (normally obtained using `id -u ACCOUNT_NAME`):
 
 ```sh
 sudo launchctl bootout system/io.github.robintheai.worldscience.network.501

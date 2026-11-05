@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:WorldScience.Controls" xmlns:s="clr-namespace:WorldScience.Services" x:Class="WorldScience.SimpleWindow"
- Title="World Science" Width="380" Height="650" CanResize="False" WindowStartupLocation="CenterScreen" Background="Transparent" TransparencyLevelHint="AcrylicBlur, Blur" TransparencyBackgroundFallback="{DynamicResource CanvasFallback}">
+ Title="Owlpath" Width="380" Height="650" CanResize="False" WindowStartupLocation="CenterScreen" Background="Transparent" TransparencyLevelHint="AcrylicBlur, Blur" TransparencyBackgroundFallback="{DynamicResource CanvasFallback}">
  <Window.Resources>
   <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
   <SolidColorBrush x:Key="TextControlBorderBrushFocused">Transparent</SolidColorBrush>
@@ -42,7 +42,7 @@
  <Grid x:Name="RootGrid" RowDefinitions="Auto,*,Auto" ClipToBounds="True">
   <Grid ColumnDefinitions="40,*,40" Margin="12,14,12,4">
    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-    <TextBlock Text="World Science" FontSize="17" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center"/>
+    <TextBlock Text="Owlpath" FontSize="17" FontWeight="SemiBold" LetterSpacing="-0.6" VerticalAlignment="Center"/>
     <Button x:Name="VersionBadge" Classes="link" Click="CheckUpdatesClick" FontSize="12" FontWeight="SemiBold" Padding="9,4" MinHeight="28" Background="{DynamicResource FieldFill}" AutomationProperties.Name="Current version. Check for updates"/>
    </StackPanel>
    <Button x:Name="SettingsButton" Grid.Column="2" Classes="icon" Click="SettingsClick" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="{x:Static s:Strings.Settings}" AutomationProperties.Name="{x:Static s:Strings.Settings}">
@@ -160,7 +160,7 @@
       <TextBlock Grid.Column="1" Text="›" FontSize="21" VerticalAlignment="Center"/>
      </Grid>
     </Button>
-    <Button x:Name="CoffeeButton" Classes="link" Click="CoffeeClick" HorizontalAlignment="Center" Padding="12,6" MinHeight="32" AutomationProperties.Name="Buy me a coffee: support World Science on our website">
+    <Button x:Name="CoffeeButton" Classes="link" Click="CoffeeClick" HorizontalAlignment="Center" Padding="12,6" MinHeight="32" AutomationProperties.Name="Buy me a coffee: support Owlpath on our website">
      <StackPanel Orientation="Horizontal" Spacing="8"><controls:CoffeeMark Width="19" Height="19" Ink="{DynamicResource SecondaryLabel}"/><TextBlock Text="{x:Static s:Strings.BuyCoffee}" FontSize="12" Foreground="{DynamicResource SecondaryLabel}" VerticalAlignment="Center"/></StackPanel>
     </Button>
     <TextBlock Text="{Binding NodeUpdateStatus}" Classes="secondary" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>

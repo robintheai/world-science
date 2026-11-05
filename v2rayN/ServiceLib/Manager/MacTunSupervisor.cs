@@ -43,7 +43,7 @@ public static class MacTunSupervisor
             if ! active; then exit 0; fi
           fi
           "$session/core" run -c "$session/config.json" >> {{Q(log)}} 2>&1 < /dev/null & child=$!
-          /usr/bin/printf 'World Science tunnel child pid=%s\n' "$child" >> {{Q(log)}}
+          /usr/bin/printf 'Owlpath tunnel child pid=%s\n' "$child" >> {{Q(log)}}
           /bin/sleep 0.5
           if /bin/kill -0 "$child" 2>/dev/null; then
             if ! ( {{installDns}} ); then /bin/kill -TERM "$child" 2>/dev/null || true; fi
@@ -54,7 +54,7 @@ public static class MacTunSupervisor
           if ! requested; then continue; fi
           wait "$child" 2>/dev/null; result=$?; child=''
           {{removeDns}}
-          /usr/bin/printf 'World Science tunnel exited (%s); retry in %ss\n' "$result" "$delay" >> {{Q(log)}}
+          /usr/bin/printf 'Owlpath tunnel exited (%s); retry in %ss\n' "$result" "$delay" >> {{Q(log)}}
           if [ "$ticks" -ge 120 ]; then delay=1; fi
           remaining=$delay
           while active && requested && [ "$remaining" -gt 0 ]; do /bin/sleep 1; remaining=$((remaining-1)); done

@@ -2,13 +2,14 @@ using System.Security;
 namespace WorldScience.Services;
 
 /// <summary>
-/// Opens World Science when the user signs in. macOS uses a per-user LaunchAgent. Windows uses a scheduled
+/// Opens Owlpath when the user signs in. macOS uses a per-user LaunchAgent. Windows uses a scheduled
 /// task with highest privileges because the app manifest requires elevation, which a Run key cannot provide.
 /// </summary>
 internal static class LaunchAtLogin
 {
     private const string Label = "io.github.robintheai.worldscience.login";
-    private const string TaskName = "World Science";
+    private const string TaskName = "Owlpath";
+    private const string LegacyTaskName = "World Science";
     private static string AgentPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "LaunchAgents", Label + ".plist");
 
     /// <summary>The .app bundle when running from one, so macOS shows the normal app identity.</summary>
@@ -37,7 +38,7 @@ internal static class LaunchAtLogin
         if (OperatingSystem.IsMacOS())
         {
             if (!enabled) { if (File.Exists(AgentPath)) File.Delete(AgentPath); return; }
-            var bundle = MacBundle(AppContext.BaseDirectory) ?? throw new InvalidOperationException(Ui.T("Move World Science to Applications first.", "请先把 World Science 拖到「应用程序」文件夹。"));
+            var bundle = MacBundle(AppContext.BaseDirectory) ?? throw new InvalidOperationException(Ui.T("Move Owlpath to Applications first.", "请先把 Owlpath 拖到「应用程序」文件夹。"));
             Directory.CreateDirectory(Path.GetDirectoryName(AgentPath)!);
             var tmp = AgentPath + ".tmp"; File.WriteAllText(tmp, AgentPlist(bundle)); File.Move(tmp, AgentPath, true);
             return;
@@ -62,6 +63,23 @@ internal static class LaunchAtLogin
             throw new InvalidOperationException(Ui.T("Windows did not accept the startup setting.", "Windows 没有接受开机启动设置，请以管理员身份运行后再试。"));
     }
 
+    /// <summary>Points an enabled macOS login item at this app, for example after the bundle was renamed.</summary>
+    internal static void Refresh()
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                // The task was named after the app's earlier name; replace it so the switch reflects it.
+                if (Run("schtasks.exe", "/Query", "/TN", LegacyTaskName).ExitCode == 0)
+                { Set(true); Run("schtasks.exe", "/Delete", "/F", "/TN", LegacyTaskName); }
+                return;
+            }
+            if (!OperatingSystem.IsMacOS() || !File.Exists(AgentPath) || MacBundle(AppContext.BaseDirectory) is not { } bundle) return;
+            if (File.ReadAllText(AgentPath) != AgentPlist(bundle)) Set(true);
+        }
+        catch (Exception ex) { Logging.SaveLog("Simple.LaunchAtLogin", ex); }
+    }
     /// <summary>An earlier edition's login item would start the old app next to this one. Replace it with ours.
     /// Their LaunchAgents used the com.robintheai prefix; their Windows tasks started v2rayNSimple.exe.</summary>
     internal static void MigrateLegacy()

@@ -4,9 +4,9 @@
     <AssemblyName>WorldScience</AssemblyName>
     <RootNamespace>WorldScience</RootNamespace>
     <Version>1.0.6</Version>
-    <Product>World Science</Product>
-    <Title>World Science</Title>
-    <Description>World Science</Description>
+    <Product>Owlpath</Product>
+    <Title>Owlpath</Title>
+    <Description>Owlpath</Description>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>Assets/simple.ico</ApplicationIcon>
     <ApplicationManifest Condition="$([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">app.manifest</ApplicationManifest>

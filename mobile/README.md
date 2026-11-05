@@ -1,4 +1,4 @@
-# World Science for Android
+# Owlpath for Android
 
 [中文安装教程](../INSTALL.md#android)
 

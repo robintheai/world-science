@@ -19,7 +19,7 @@ internal static class OtherVpnClients
         ("sfm", "sing-box"), ("v2rayx", "V2RayX"), ("v2rayu", "V2rayU"), ("qv2ray", "Qv2ray"), ("shadowsocks", "Shadowsocks"),
         ("rocketbridge", "RocketBridge"), ("v2raynsimple", Earlier), ("v2raynsimple-account", Earlier)
     ];
-    /// <summary>Earlier editions of this client, before it was renamed World Science.</summary>
+    /// <summary>Earlier editions of this client, before it was renamed World Science (now Owlpath).</summary>
     private const string Earlier = "v2rayN Simple";
     private static readonly string[] Cores = ["xray", "sing-box", "mihomo", "clash", "clash-meta", "clash-darwin", "v2ray", "tun2socks"];
 
@@ -50,7 +50,7 @@ internal static class OtherVpnClients
     }
 
     internal static IReadOnlyCollection<string> OwnMarkers(string dataDirectory) =>
-        [AppContext.BaseDirectory.TrimEnd('/', '\\'), dataDirectory.TrimEnd('/', '\\'), "io.github.robintheai.worldscience.network", "World-Science", "World Science.app"];
+        [AppContext.BaseDirectory.TrimEnd('/', '\\'), dataDirectory.TrimEnd('/', '\\'), "io.github.robintheai.worldscience.network", "World-Science", "World Science.app", "Owlpath.app"];
 
     /// <summary>Best effort: an unreadable process list never blocks Connect.</summary>
     internal static async Task<string?> Find(string dataDirectory, CancellationToken token = default)
@@ -89,5 +89,5 @@ internal static class OtherVpnClients
 
     internal static string Message(string app) => Ui.T(
         $"{app} is running and may take over your network. Quit {app} completely, then connect again.",
-        $"检测到 {app} 正在运行，它会和 World Science 抢占网络。请先完全退出 {app}，再点连接。");
+        $"检测到 {app} 正在运行，它会和 Owlpath 抢占网络。请先完全退出 {app}，再点连接。");
 }

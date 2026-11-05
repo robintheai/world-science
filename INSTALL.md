@@ -1,4 +1,4 @@
-# World Science 安装教程
+# Owlpath 安装教程
 
 适合第一次安装的用户。按你的设备看对应部分即可：[Mac](#mac) · [Windows](#windows) · [Android](#android) · [常见问题](#常见问题)
 
@@ -9,26 +9,29 @@
 ## Mac
 
 1. 确认芯片：点左上角  →「关于本机」。显示 Apple M1/M2/M3/M4… 就下载 `macos-arm64.dmg`；显示 Intel 就下载 `macos-x64.dmg`。需要 macOS 13.6 或更新版本。
-2. 双击下载的 DMG，把 **World Science** 拖到窗口里的 **Applications（应用程序）**。
-3. 在「应用程序」里双击 World Science。
+2. 双击下载的 DMG，把 **Owlpath** 拖到窗口里的 **Applications（应用程序）**。
+3. 在「应用程序」里双击 Owlpath。
+
+> 从 World Science 升级：Owlpath 就是改名后的 World Science。拖入新版后，把「应用程序」里旧的 World Science 移到废纸篓即可，订阅和设置都会保留。
+
 
 **第一次打不开怎么办？** 安装包没有经过 Apple 公证，系统可能提示“无法验证开发者”。
 
-- 方法一：关掉提示，打开「系统设置 → 隐私与安全性」，在下方找到 World Science，点「仍要打开」，再确认一次。
+- 方法一：关掉提示，打开「系统设置 → 隐私与安全性」，在下方找到 Owlpath，点「仍要打开」，再确认一次。
 - 方法二：打开「终端」，粘贴下面这行后回车，再重新打开应用：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/World Science.app"
+xattr -dr com.apple.quarantine "/Applications/Owlpath.app"
 ```
 
-**第一次连接**时，系统会请求管理员授权，用来安装网络辅助服务（让整台电脑的流量都走代理）。输入开机密码即可，World Science 看不到也不会保存这个密码。之后连接、断开都不会再问，只有升级内核时可能再问一次。
+**第一次连接**时，系统会请求管理员授权，用来安装网络辅助服务（让整台电脑的流量都走代理）。输入开机密码即可，Owlpath 看不到也不会保存这个密码。之后连接、断开都不会再问，只有升级内核时可能再问一次。
 
 连接后，屏幕右上角的菜单栏会出现地球图标：有流量时卫星绕着地球转，旁边显示实时网速。关闭窗口后应用仍在菜单栏运行，点图标可以打开或退出。
 
 ## Windows
 
 1. 一般电脑下载 `windows-x64.zip`；Surface Pro X 这类 ARM 电脑下载 `windows-arm64.zip`。
-2. 右键 ZIP →「全部解压缩」，解压到一个**单独的新文件夹**，例如 `D:\Apps\World Science`。不要在压缩包预览里直接运行，也不要只复制 exe 文件。
+2. 右键 ZIP →「全部解压缩」，解压到一个**单独的新文件夹**，例如 `D:\Apps\Owlpath`。不要在压缩包预览里直接运行，也不要只复制 exe 文件。
 3. 双击文件夹里的 **WorldScience.exe**。出现“用户账户控制”时点「是」，因为全局代理需要管理员权限。
 4. 如果出现“Windows 已保护你的电脑”，点「更多信息」→「仍要运行」。
 
@@ -38,8 +41,8 @@ xattr -dr com.apple.quarantine "/Applications/World Science.app"
 
 1. 用手机浏览器下载 `World-Science-<版本>-android.apk`（需要 Android 8 及以上）。
 2. 打开下载的文件。如果提示“禁止安装未知应用”，按提示允许这个浏览器安装应用，再回来安装。
-3. 打开 World Science，粘贴订阅链接，点「添加订阅」，再点圆形按钮。第一次连接时系统会弹出 VPN 请求，点「确定」。
-4. 如果锁屏后经常断开，在系统设置里把 World Science 的电池优化设为「不限制」。
+3. 打开 Owlpath，粘贴订阅链接，点「添加订阅」，再点圆形按钮。第一次连接时系统会弹出 VPN 请求，点「确定」。
+4. 如果锁屏后经常断开，在系统设置里把 Owlpath 的电池优化设为「不限制」。
 
 ## 添加订阅与连接（三个平台相同）
 

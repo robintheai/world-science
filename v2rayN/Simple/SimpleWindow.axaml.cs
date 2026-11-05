@@ -26,12 +26,12 @@ public partial class SimpleWindow : Window
         // Avalonia's default fallback can pick Japanese glyph forms for Chinese text on Windows.
         if (OperatingSystem.IsWindows()) FontFamily = new FontFamily("Microsoft YaHei UI, Segoe UI, sans-serif");
         Program.ActivationRequested += () => Dispatcher.UIThread.Post(() => { Opacity = 1; Show(); Activate(); });
-        Title = $"World Science · {VersionLabel}"; VersionBadge.Content = $"v{VersionLabel}";
+        Title = $"Owlpath · {VersionLabel}"; VersionBadge.Content = $"v{VersionLabel}";
         if (OperatingSystem.IsMacOS())
         {
             var menu = new NativeMenu();
-            var about = new NativeMenuItem(Ui.T($"About World Science {VersionLabel}", $"关于 World Science {VersionLabel}"));
-            about.Click += (_, _) => { Show(); Activate(); _client.Notice = $"World Science {VersionLabel}"; _client.Notify(); };
+            var about = new NativeMenuItem(Ui.T($"About Owlpath {VersionLabel}", $"关于 Owlpath {VersionLabel}"));
+            about.Click += (_, _) => { Show(); Activate(); _client.Notice = $"Owlpath {VersionLabel}"; _client.Notify(); };
             menu.Add(about);
             UpdateMenuItem = new NativeMenuItem(Program.IntegrationOutput is not null ? "Check for Updates…" : Ui.T("Check for Updates…", "检查更新…"));
             UpdateMenuItem.Click += async (_, _) => await CheckUpdates(true);
@@ -75,6 +75,7 @@ public partial class SimpleWindow : Window
                 else
                 {
                     if (!_client.Settings.LegacyImportDone && await ImportLegacy(LegacyImport.Root) > 0) LaunchAtLogin.MigrateLegacy();
+                    LaunchAtLogin.Refresh();
                     await RefreshSubscriptionUi(); ShowPage(_client.AvailableLocations.Any() ? "home" : "subscriptions"); _timer.Start(); _ = CheckUpdates(false);
                     ShowUsageWarning();
                     if (_client.Settings.AutoConnect && _client.AvailableLocations.Any() && !_client.Connected) _ = ToggleConnection();
@@ -98,7 +99,7 @@ public partial class SimpleWindow : Window
         else
         {
             var menu = new NativeMenu();
-            var show = new NativeMenuItem(Ui.T("Open World Science", "打开 World Science")); show.Click += (_, _) => { Show(); Activate(); }; menu.Add(show);
+            var show = new NativeMenuItem(Ui.T("Open Owlpath", "打开 Owlpath")); show.Click += (_, _) => { Show(); Activate(); }; menu.Add(show);
             var toggle = new NativeMenuItem(Ui.T("Connect / Disconnect", "连接 / 断开")); toggle.Click += async (_, _) => await ToggleConnection(); menu.Add(toggle);
             var quit = new NativeMenuItem(Ui.T("Quit", "退出")); quit.Click += async (_, _) => await Quit(); menu.Add(quit);
             _tray = new TrayIcon { Icon = Icon, Menu = menu, IsVisible = true }; _tray.Clicked += (_, _) => { Show(); Activate(); };
