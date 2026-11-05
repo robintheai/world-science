@@ -1,6 +1,6 @@
-# World Science owl
+# Owlpath owl
 
-Vector sources for the World Science owl (moon silhouette).
+Vector sources for the Owlpath owl (moon silhouette).
 
 - `owl-b-live.svg`: one file with all connection states. Switch with the root class `state-off` (day, asleep), `state-busy` (dusk, looking for signal) or `state-on` (night, glowing eyes). Add `waking` for about 2 s when switching to `state-on`, and `dozing` when switching to `state-off`. Motion stops under `prefers-reduced-motion`.
 - `owl-b-on.svg`, `owl-b-busy.svg`, `owl-b-off.svg`: still pictures of each state. The app icon (`v2rayN/Simple/Assets/simple.*`) is the `on` state.

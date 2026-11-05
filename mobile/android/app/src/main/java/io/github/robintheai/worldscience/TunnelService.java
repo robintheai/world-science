@@ -58,7 +58,7 @@ public final class TunnelService extends VpnService implements Native {
   var open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_IMMUTABLE);
   var stop=PendingIntent.getService(this,1,new Intent(this,TunnelService.class).setAction("STOP"),PendingIntent.FLAG_IMMUTABLE);
   String detail="Connected".equals(state)?Text.state(state)+" · "+Locations.label(this):Text.state(state);
-  return new Notification.Builder(this,"vpn").setSmallIcon(io.github.robintheai.worldscience.R.drawable.notify).setContentTitle("World Science").setContentText(detail)
+  return new Notification.Builder(this,"vpn").setSmallIcon(io.github.robintheai.worldscience.R.drawable.notify).setContentTitle("Owlpath").setContentText(detail)
    .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)
    .addAction(new Notification.Action.Builder(null,Text.t("Disconnect","断开"),stop).build()).build();
  }
@@ -163,7 +163,7 @@ public final class TunnelService extends VpnService implements Native {
   }
   return false;
  }
- public int openTun()throws Exception{if(prepare(this)!=null)throw new Exception("VPN permission required");Builder b=new Builder().setSession("World Science").setMtu(1400).addAddress("172.19.0.1",30).addAddress("fdfe:dcba:9876::1",126).addRoute("0.0.0.0",0).addRoute("::",0).addDnsServer("172.19.0.2");if(Build.VERSION.SDK_INT>=29)b.setMetered(false);Network n=underlying;if(n!=null)b.setUnderlyingNetworks(new Network[]{n});ParcelFileDescriptor previous=tun,next=b.establish();if(next==null)throw new Exception("VPN unavailable");tun=next;
+ public int openTun()throws Exception{if(prepare(this)!=null)throw new Exception("VPN permission required");Builder b=new Builder().setSession("Owlpath").setMtu(1400).addAddress("172.19.0.1",30).addAddress("fdfe:dcba:9876::1",126).addRoute("0.0.0.0",0).addRoute("::",0).addDnsServer("172.19.0.2");if(Build.VERSION.SDK_INT>=29)b.setMetered(false);Network n=underlying;if(n!=null)b.setUnderlyingNetworks(new Network[]{n});ParcelFileDescriptor previous=tun,next=b.establish();if(next==null)throw new Exception("VPN unavailable");tun=next;
   // The new interface replaces the previous one before it is released, so there is no unprotected gap.
   if(previous!=null)try{previous.close();}catch(Exception ignored){}
   return tun.getFd();}

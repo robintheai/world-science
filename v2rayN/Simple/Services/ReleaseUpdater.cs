@@ -181,8 +181,8 @@ public sealed class ReleaseUpdater(HttpClient http)
             Directory.Delete(stage, true);
             Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { "/select,", package } });
             throw new InvalidOperationException(Ui.T(
-                "World Science shares its folder with other files, so it cannot update itself safely. Extract the downloaded ZIP into its own folder.",
-                "World Science 所在的文件夹里还有其他文件，无法安全自动更新。请把下载好的压缩包解压到一个单独的新文件夹再打开。"));
+                "Owlpath shares its folder with other files, so it cannot update itself safely. Extract the downloaded ZIP into its own folder.",
+                "Owlpath 所在的文件夹里还有其他文件，无法安全自动更新。请把下载好的压缩包解压到一个单独的新文件夹再打开。"));
         }
         var backup = Path.Combine(parent, ".simple-previous-" + Guid.NewGuid().ToString("N"));
         static string Q(string value) => "'" + value.Replace("'", "''") + "'";

@@ -69,7 +69,7 @@ public sealed class SimpleApp : Application
 {
     public override void Initialize()
     {
-        Name = "World Science";
+        Name = "Owlpath";
         Resources.MergedDictionaries.Add(new Avalonia.Markup.Xaml.Styling.ResourceInclude(new Uri("avares://WorldScience/"))
         { Source = new Uri("avares://WorldScience/Controls/GlassTheme.axaml") });
         Styles.Add(new Avalonia.Themes.Fluent.FluentTheme());

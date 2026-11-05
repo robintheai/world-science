@@ -1,10 +1,10 @@
-# World Science
+# Owlpath
 
 **中文** · [English](README.en.md)
 
 **给科研人员的极简代理客户端。** 粘贴订阅，点一下连接，整台电脑或手机即可访问 PubMed 全文、Google Scholar、期刊官网、学术会议和各类科研工具。
 
-World Science 是 [v2rayN](https://github.com/2dust/v2rayN) 的免费开源分支（GPL-3.0），面向第一次使用代理的医生、医学生和科研人员：没有账号、没有复杂设置，界面只保留真正需要的几件事。
+Owlpath（原名 World Science）是 [v2rayN](https://github.com/2dust/v2rayN) 的免费开源分支（GPL-3.0），面向第一次使用代理的医生、医学生和科研人员：没有账号、没有复杂设置，界面只保留真正需要的几件事。
 
 <p align="center"><img src="docs/menu-bar-owl.gif" width="360" alt="Mac 菜单栏：没连接时猫头鹰闭眼睡觉，连上后睁眼，有流量时扇动翅膀，流量越大扇得越快"></p>
 
@@ -18,7 +18,7 @@ v2rayN、Clash 这类常见客户端的思路是节点越多越好、自动切�
 
 ## 适合谁
 
-World Science 基于 [v2rayN](https://github.com/2dust/v2rayN) 开发，非常适合第一次用代理的新手直接上手：填一个订阅链接，点一下连接就能用。已经熟悉 v2rayN、Clash 的用户就不需要用它了，原版更灵活。
+Owlpath 基于 [v2rayN](https://github.com/2dust/v2rayN) 开发，非常适合第一次用代理的新手直接上手：填一个订阅链接，点一下连接就能用。已经熟悉 v2rayN、Clash 的用户就不需要用它了，原版更灵活。
 
 ## 功能
 
@@ -38,6 +38,8 @@ World Science 基于 [v2rayN](https://github.com/2dust/v2rayN) 开发，非常�
 | Windows 10/11（x64 / ARM64） | `World-Science-<版本>-windows-x64.zip` / `-windows-arm64.zip` |
 | Android 8+（ARM64 / x86_64） | `World-Science-<版本>-android.apk` |
 
+安装包文件名暂时沿用旧名 `World-Science-`，这样已安装的旧版本仍能自动更新。
+
 - GitHub：[Releases](https://github.com/robintheai/world-science/releases)
 - 国内镜像：<https://ai.z5a.com/clients/world-science/>（GitHub 打不开时使用，文件和校验值完全相同）
 
@@ -45,11 +47,11 @@ World Science 基于 [v2rayN](https://github.com/2dust/v2rayN) 开发，非常�
 
 ## 三步开始
 
-1. 打开 World Science，在「订阅」里粘贴服务商给你的订阅链接，点「添加订阅」。
+1. 打开 Owlpath，在「订阅」里粘贴服务商给你的订阅链接，点「添加订阅」。
 2. 回到首页，保持「自动」或在「选择线路」中选一个地区。
 3. 点中间的圆形按钮连接；再点一次断开。
 
-World Science 本身不提供节点。节点是否可用、速度和流量由你的订阅服务商决定。
+Owlpath 本身不提供节点。节点是否可用、速度和流量由你的订阅服务商决定。
 
 ## 隐私
 

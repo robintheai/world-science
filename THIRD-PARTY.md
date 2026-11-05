@@ -1,6 +1,6 @@
 # Attribution and third party components
 
-World Science is a modified distribution of [2dust/v2rayN](https://github.com/2dust/v2rayN), licensed under GPL-3.0. Original copyright and LICENSE are retained. The simplified desktop UI, the Android client and release integration are maintained by robintheai at https://github.com/robintheai/world-science. It is not an official v2rayN release and contains no third-party app artwork.
+Owlpath is a modified distribution of [2dust/v2rayN](https://github.com/2dust/v2rayN), licensed under GPL-3.0. Original copyright and LICENSE are retained. The simplified desktop UI, the Android client and release integration are maintained by robintheai at https://github.com/robintheai/world-science. It is not an official v2rayN release and contains no third-party app artwork.
 
 Source baseline: 57f17d5939e88c8e643ab49b90869d637765e75a (v2rayN 7.25.6).
 Bundled core archive source: https://github.com/2dust/v2rayN-core-bin/tree/dd13a61184af1981545fe5f34a1283286959e51d

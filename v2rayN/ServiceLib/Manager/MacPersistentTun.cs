@@ -89,17 +89,17 @@ public sealed class MacPersistentTun
             size += count; if (response[size - 1] == '\n') break;
         }
         var result = Encoding.ASCII.GetString(response, 0, size).Trim();
-        if (result == "BUSY") throw new InvalidOperationException("Another World Science window is using the network service. Disconnect it first.");
-        if (!result.StartsWith("OK", StringComparison.Ordinal)) throw new InvalidOperationException("The network service could not complete the request. Reopen World Science and try again.");
+        if (result == "BUSY") throw new InvalidOperationException("Another Owlpath window is using the network service. Disconnect it first.");
+        if (!result.StartsWith("OK", StringComparison.Ordinal)) throw new InvalidOperationException("The network service could not complete the request. Reopen Owlpath and try again.");
         return result;
     }
     public async Task<int> Connect(string core, string config, MacAuthorizationPromptGate gate,
         Func<string, CancellationToken, Task<string>> authorize, CancellationToken token, Action<string>? diagnostic = null)
     {
-        if (_uid < 501) throw new InvalidOperationException("Open World Science from your normal macOS user account.");
+        if (_uid < 501) throw new InvalidOperationException("Open Owlpath from your normal macOS user account.");
         var helper = Path.Combine(AppContext.BaseDirectory, "Assets", "network-helper");
         var versionFile = helper + ".version";
-        if (!File.Exists(helper) || !File.Exists(versionFile)) throw new InvalidOperationException("The network helper is missing. Reinstall World Science.");
+        if (!File.Exists(helper) || !File.Exists(versionFile)) throw new InvalidOperationException("The network helper is missing. Reinstall Owlpath.");
         var sourceVersion = (await File.ReadAllTextAsync(versionFile, token)).Trim();
         if (sourceVersion.Length != 64 || sourceVersion.Any(c => !Uri.IsHexDigit(c))) throw new InvalidOperationException("Invalid network helper version.");
         var coreHash = await HashFile(core);
@@ -112,7 +112,7 @@ public sealed class MacPersistentTun
         if (installed != fingerprint)
         {
             if (!gate.TryConsume()) throw new MacNetworkAuthorizationException("Network setup needs permission. Click Connect to finish setup.");
-            // The OS asks once to install/upgrade this fixed service. No credentials enter World Science.
+            // The OS asks once to install/upgrade this fixed service. No credentials enter Owlpath.
             var staging = Path.Combine(Path.GetTempPath(), "worldscience-network-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(staging);
             try
@@ -145,7 +145,7 @@ public sealed class MacPersistentTun
             try { status = await Command("STATUS", token); break; }
             catch (SocketException) { await Task.Delay(200, token); }
         }
-        if (status is null) throw new InvalidOperationException("The installed network service is unavailable. Check World Science in macOS Login Items & Extensions, or reinstall World Science.");
+        if (status is null) throw new InvalidOperationException("The installed network service is unavailable. Check Owlpath in macOS Login Items & Extensions, or reinstall Owlpath.");
         var fields = status.Split(' ');
         if (fields.Length != 4 || fields[1] != "1" || !int.TryParse(fields[2], out var pid) || pid <= 1) throw new InvalidOperationException("Unsupported network service response.");
         await Command("START", token);

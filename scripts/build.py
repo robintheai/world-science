@@ -43,19 +43,19 @@ def main():
     shutil.copy2(ROOT/'THIRD-PARTY.md',pub/'THIRD-PARTY.md')
     shutil.copy2(ROOT/'QUICKSTART.md',pub/'QUICKSTART.md')
     shutil.copy2(ROOT/'INSTALL.md',pub/'INSTALL.md')
-    (pub/'BUILD-INFO.json').write_text(json.dumps({'application':'World Science','version':a.version,'rid':rid,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'upstream':'57f17d5939e88c8e643ab49b90869d637765e75a','core_commit':CORE_COMMIT,'core_sha256':digest},indent=2))
+    (pub/'BUILD-INFO.json').write_text(json.dumps({'application':'Owlpath','version':a.version,'rid':rid,'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'upstream':'57f17d5939e88c8e643ab49b90869d637765e75a','core_commit':CORE_COMMIT,'core_sha256':digest},indent=2))
     filename=f'World-Science-{a.version}-{core_os}-{arch}'
     if mac:
         stage=ROOT/'build'/('dmg-'+rid);shutil.rmtree(stage,ignore_errors=True);stage.mkdir()
-        app=stage/'World Science.app';contents=app/'Contents';resources=contents/'Resources';resources.mkdir(parents=True);shutil.copytree(pub,contents/'MacOS')
+        app=stage/'Owlpath.app';contents=app/'Contents';resources=contents/'Resources';resources.mkdir(parents=True);shutil.copytree(pub,contents/'MacOS')
         shutil.copy2(ROOT/'v2rayN/Simple/Assets/simple.icns',resources/'AppIcon.icns')
-        with (contents/'Info.plist').open('wb') as f:plistlib.dump({'CFBundleIdentifier':'io.github.robintheai.worldscience','CFBundleName':'World Science','CFBundleDisplayName':'World Science','CFBundleExecutable':'WorldScience','CFBundleIconFile':'AppIcon.icns','CFBundlePackageType':'APPL','CFBundleShortVersionString':a.version,'CFBundleVersion':a.version,'LSMinimumSystemVersion':'13.6','NSHighResolutionCapable':True,'CFBundleDevelopmentRegion':'zh_CN'},f)
+        with (contents/'Info.plist').open('wb') as f:plistlib.dump({'CFBundleIdentifier':'io.github.robintheai.worldscience','CFBundleName':'Owlpath','CFBundleDisplayName':'Owlpath','CFBundleExecutable':'WorldScience','CFBundleIconFile':'AppIcon.icns','CFBundlePackageType':'APPL','CFBundleShortVersionString':a.version,'CFBundleVersion':a.version,'LSMinimumSystemVersion':'13.6','NSHighResolutionCapable':True,'CFBundleDevelopmentRegion':'zh_CN'},f)
         # Ad-hoc integrity signature, NOT Developer ID signing or Apple notarization.
         run('codesign','--force','--deep','--sign','-',app)
         (stage/'Applications').symlink_to('/Applications')
         shutil.copy2(ROOT/'INSTALL.md',stage/'安装说明.md')
         destination=out/(filename+'.dmg');destination.unlink(missing_ok=True)
-        run('hdiutil','create','-volname','World Science','-srcfolder',stage,'-ov','-format','UDZO',destination)
+        run('hdiutil','create','-volname','Owlpath','-srcfolder',stage,'-ov','-format','UDZO',destination)
     else:
         destination=out/(filename+'.zip');destination.unlink(missing_ok=True)
         with zipfile.ZipFile(destination,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:

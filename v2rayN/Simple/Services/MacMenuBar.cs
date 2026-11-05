@@ -94,7 +94,7 @@ public sealed class MacMenuBar : IDisposable
         SendTwoObj(_textAttributes, Sel("setObject:forKey:"), paragraph, Str("NSParagraphStyle"));
         Send(paragraph, Sel("release"));
         var menu = Send(Send(objc_getClass("NSMenu"), Sel("alloc")), Sel("init"));
-        foreach (var (title, action) in new[] { (Ui.T("Open World Science", "打开 World Science"), "simpleOpen:"), (Ui.T("Connect / Disconnect", "连接 / 断开"), "simpleToggle:"), (Ui.T("Quit", "退出"), "simpleQuit:") })
+        foreach (var (title, action) in new[] { (Ui.T("Open Owlpath", "打开 Owlpath"), "simpleOpen:"), (Ui.T("Connect / Disconnect", "连接 / 断开"), "simpleToggle:"), (Ui.T("Quit", "退出"), "simpleQuit:") })
         {
             var item = NewItem(Send(objc_getClass("NSMenuItem"), Sel("alloc")), Sel("initWithTitle:action:keyEquivalent:"), Str(title), Sel(action), Str(""));
             SendObj(item, Sel("setTarget:"), _target); SendObj(menu, Sel("addItem:"), item); Send(item, Sel("release"));
@@ -127,7 +127,7 @@ public sealed class MacMenuBar : IDisposable
         Render();
         // Setting a tooltip makes macOS pop it up at the pointer, wherever the pointer is. Live rates changed it every
         // second, so it followed every click; set it only when status or node changes and keep rates out of it.
-        var tip = $"World Science · {controller.ConnectionStatus}\n{controller.CurrentNode}";
+        var tip = $"Owlpath · {controller.ConnectionStatus}\n{controller.CurrentNode}";
         if (tip != _tooltip) { _tooltip = tip; SendObj(_button, Sel("setToolTip:"), Str(tip)); }
     }
     private void Render()

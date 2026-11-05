@@ -1,4 +1,4 @@
-World Science for Android
+Owlpath for Android
 Based on the v2rayN project and sing-box 1.14.3.
 Distributed under GPL-3.0. The full license is included as LICENSE.
 Source code: https://github.com/robintheai/world-science

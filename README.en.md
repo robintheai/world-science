@@ -1,10 +1,10 @@
-# World Science
+# Owlpath
 
 [中文](README.md) · **English**
 
 **A minimal proxy client for researchers.** Paste a subscription, press Connect, and the whole computer or phone can reach PubMed full text, Google Scholar, journal websites, conferences and research tools.
 
-World Science is a free, open-source fork (GPL-3.0) of [v2rayN](https://github.com/2dust/v2rayN) for doctors, medical students and researchers using a proxy for the first time: no account, no complicated settings, only the few things you actually need.
+Owlpath (formerly World Science) is a free, open-source fork (GPL-3.0) of [v2rayN](https://github.com/2dust/v2rayN) for doctors, medical students and researchers using a proxy for the first time: no account, no complicated settings, only the few things you actually need.
 
 <p align="center"><img src="docs/menu-bar-owl.gif" width="360" alt="Mac menu bar: the owl sleeps when disconnected, opens its eyes when connected and beats its wings faster as traffic grows"></p>
 
@@ -18,7 +18,7 @@ Common clients such as v2rayN and Clash work on "more nodes, switch automaticall
 
 ## Who it is for
 
-World Science is built on [v2rayN](https://github.com/2dust/v2rayN) and is made for beginners who have never used a proxy: fill in one subscription link and press Connect. If you already know v2rayN or Clash, you do not need it; the original apps are more flexible.
+Owlpath is built on [v2rayN](https://github.com/2dust/v2rayN) and is made for beginners who have never used a proxy: fill in one subscription link and press Connect. If you already know v2rayN or Clash, you do not need it; the original apps are more flexible.
 
 ## Features
 
@@ -38,6 +38,8 @@ World Science is built on [v2rayN](https://github.com/2dust/v2rayN) and is made 
 | Windows 10/11 (x64 / ARM64) | `World-Science-<version>-windows-x64.zip` / `-windows-arm64.zip` |
 | Android 8+ (ARM64 / x86_64) | `World-Science-<version>-android.apk` |
 
+Package names keep the earlier `World-Science-` prefix so installed earlier versions can still update themselves.
+
 - GitHub: [Releases](https://github.com/robintheai/world-science/releases)
 - Mirror: <https://ai.z5a.com/clients/world-science/> (for when GitHub is unreachable; identical files and checksums)
 
@@ -45,11 +47,11 @@ For a first install see the [installation guide](INSTALL.md) (Chinese). There is
 
 ## Three steps
 
-1. Open World Science, paste the subscription link from your provider under "Subscriptions" and tap "Add subscription".
+1. Open Owlpath, paste the subscription link from your provider under "Subscriptions" and tap "Add subscription".
 2. Back on the home screen, keep "Automatic" or pick a region under "Choose location".
 3. Press the round button in the middle to connect; press it again to disconnect.
 
-World Science does not provide nodes. Availability, speed and data allowance depend on your subscription provider.
+Owlpath does not provide nodes. Availability, speed and data allowance depend on your subscription provider.
 
 ## Privacy
 

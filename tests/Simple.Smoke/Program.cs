@@ -12,7 +12,7 @@ if (args.Length == 4 && args[0] == "--inspect-installed-helper")
     var directory = args[3];
     var config = ServiceLib.Manager.MacPersistentTun.PrepareConfiguration(File.ReadAllText(args[1]), directory).Config;
     static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-    var version = File.ReadAllText("/Applications/World Science.app/Contents/MacOS/Assets/network-helper.version").Trim();
+    var version = File.ReadAllText("/Applications/Owlpath.app/Contents/MacOS/Assets/network-helper.version").Trim();
     var expected = Hash(Encoding.UTF8.GetBytes("network-helper-1\n" + version + "\n" + Hash(File.ReadAllBytes(args[2])) + "\n" + Hash(config)));
     Console.WriteLine(JsonSerializer.Serialize(new { matchesInstalled = expected == File.ReadAllText(Path.Combine(directory, "fingerprint")).Trim(), expected, configHash = Hash(config) }));
     return;
@@ -352,11 +352,11 @@ Assert(ReleaseUpdater.IsDedicatedInstallFolder([("WorldScience.exe", false), ("S
 Assert(!ReleaseUpdater.IsDedicatedInstallFolder([("WorldScience.exe", false), ("ServiceLib.dll", false), ("holiday.jpg", false), ("Assets", true)], package), "Windows update refuses a Downloads folder holding personal files");
 Assert(!ReleaseUpdater.IsDedicatedInstallFolder([("WorldScience.exe", false), ("Photos", true), ("Work", true)], package), "Windows update refuses a folder with other people's folders");
 Assert(!ReleaseUpdater.IsDedicatedInstallFolder([("WorldScience.exe", false), ("Projects", true)], package) && !ReleaseUpdater.IsDedicatedInstallFolder([("WorldScience.exe", false), ("notes.txt", false)], package), "even one personal folder or note blocks an automatic folder swap");
-var taskXml = System.Xml.Linq.XDocument.Parse(LaunchAtLogin.TaskXml(@"C:\Apps\World Science & Co\WorldScience.exe", @"PC\user"));
+var taskXml = System.Xml.Linq.XDocument.Parse(LaunchAtLogin.TaskXml(@"C:\Apps\Owlpath & Co\WorldScience.exe", @"PC\user"));
 string TaskValue(string name) => taskXml.Descendants().First(e => e.Name.LocalName == name).Value;
 Assert(TaskValue("StopIfGoingOnBatteries") == "false" && TaskValue("DisallowStartIfOnBatteries") == "false" && TaskValue("ExecutionTimeLimit") == "PT0S", "Windows login task is never stopped on battery or after 72 hours");
 Assert(TaskValue("Command").EndsWith("& Co\\WorldScience.exe") && TaskValue("Arguments") == "--background" && TaskValue("RunLevel") == "HighestAvailable", "Windows login task XML escapes the path and starts elevated in the background");
-Assert(LaunchAtLogin.MacBundle("/Applications/World Science.app/Contents/MacOS/") == "/Applications/World Science.app" && LaunchAtLogin.MacBundle("/tmp/build/") is null, "macOS login item opens the app bundle");
+Assert(LaunchAtLogin.MacBundle("/Applications/Owlpath.app/Contents/MacOS/") == "/Applications/Owlpath.app" && LaunchAtLogin.MacBundle("/tmp/build/") is null, "macOS login item opens the app bundle");
 const string clashYaml = """
 port: 7890
 x-base: &base {server: 192.0.2.10, port: 443}

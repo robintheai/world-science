@@ -14,7 +14,7 @@ public partial class UpdateWindow : Window
         Func<string, Task> install, CancellationToken cancellation = default)
     {
         InitializeComponent();
-        VersionLabel.Text = $"World Science {version.ToString(3)}";
+        VersionLabel.Text = $"Owlpath {version.ToString(3)}";
         Title = Ui.T("Software update", "软件更新"); Heading.Text = Ui.T("Update available", "有新版本");
         StatusLabel.Text = Ui.T("Your subscriptions and locations stay saved.", "订阅和线路设置都会保留。");
         LaterButton.Content = Ui.T("Not now", "以后再说"); UpdateButton.Content = Ui.T("Update", "立即更新");
@@ -41,7 +41,7 @@ public partial class UpdateWindow : Window
         {
             if (_package is null)
             {
-                Heading.Text = Ui.T("Updating World Science", "正在更新 World Science");
+                Heading.Text = Ui.T("Updating Owlpath", "正在更新 Owlpath");
                 StatusLabel.Text = Ui.T("Downloading…", "正在下载…");
                 DownloadProgress.IsVisible = true; DownloadProgress.Value = 0;
                 LaterButton.Content = Ui.T("Cancel", "取消");
@@ -54,8 +54,8 @@ public partial class UpdateWindow : Window
                 if (_closed) return;
                 Heading.Text = Ui.T("Ready to install", "可以安装了");
                 StatusLabel.Text = OperatingSystem.IsMacOS()
-                    ? Ui.T("Quit World Science, then drag the new app into Applications.", "点击下方按钮退出后，把新版拖进「应用程序」文件夹替换即可。")
-                    : Ui.T("World Science will restart to finish updating.", "World Science 将自动重启完成更新。");
+                    ? Ui.T("Quit Owlpath, then drag the new app into Applications.", "点击下方按钮退出后，把新版拖进「应用程序」文件夹替换即可。")
+                    : Ui.T("Owlpath will restart to finish updating.", "Owlpath 将自动重启完成更新。");
                 DownloadProgress.IsVisible = false;
                 LaterButton.Content = Ui.T("Later", "稍后");
                 UpdateButton.Content = OperatingSystem.IsMacOS() ? Ui.T("Quit & install", "退出并安装") : Ui.T("Restart & install", "重启并安装");
