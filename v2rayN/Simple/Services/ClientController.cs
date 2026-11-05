@@ -81,7 +81,6 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
     public DateTimeOffset? ConnectedSince { get; private set; }
     public string ConnectionDuration => Connected && ConnectedSince is { } since ? Ui.Duration(DateTimeOffset.UtcNow - since) : "";
     public string CurrentLatency => Connected && Nodes.FirstOrDefault(n => n.Id == Config.IndexId) is { HasFreshDelay: true } node ? $"{node.Delay:0} ms" : "";
-    public bool OnProxyFallback => Connected && _proxyFallback;
     public string? ChosenCountry => Settings.ManualCountry ?? ManualNode()?.Country;
     public bool AutomaticLocation => string.IsNullOrEmpty(Settings.ManualCountry) && string.IsNullOrEmpty(Settings.ManualNodeKey);
     public bool CanChooseLocation => true;
@@ -136,12 +135,15 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
     private bool _choosingLocation;
     private readonly MacAuthorizationPromptGate _macPromptGate = new();
     private bool UseMacBridge => !integrationTest && OperatingSystem.IsMacOS() && Settings.Tun;
+    // macOS and Windows keep one TUN bridge across node switches, so recovery never falls back to the
+    // physical network. Only an explicit Disconnect or Quit removes it.
+    private bool UseTunBridge => !integrationTest && Settings.Tun && (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows());
+    // True once this Connect has carried traffic: later failures are recovery, which must stay inside the tunnel.
+    private bool _recovering;
+    private bool KeepsTunnel => _recovering && UseTunBridge && CoreManager.Instance.HasRetainedMacTunBridge && !CoreAdminManager.Instance.MacTunSuspended;
     private CancellationTokenSource? _connectCts;
     private readonly HealthPolicy _health = new();
-    private bool _offline, _proxyFallback;
-    // Whether this Connect already tried system proxy after TUN failed; and whether TUN proved unusable on this PC
-    // during this run, so later Connects skip the slow TUN attempt until the app restarts.
-    private bool _proxyTried, _tunUnusable;
+    private bool _offline;
     private DateTimeOffset _lastHealth, _lastTick;
     private DateTimeOffset _nextRetry;
     private DateTimeOffset _lastRecoveryRefresh;
@@ -348,7 +350,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         if (!manual) _lastHealthyNode = NodeKey(row);
         var reconnect = _wantConnected;
         if (Connected && row.Id == Config.IndexId) return;
-        if (reconnect) await DisconnectInternal(keepMacBridge: UseMacBridge);
+        if (reconnect) await DisconnectInternal(keepMacBridge: UseTunBridge);
         await ConfigHandler.SetDefaultServerIndex(Config, row.Id);
         foreach (var n in Nodes) { n.Current = n.Id == row.Id; n.Notify(); }
         _cooldowns.Remove(row.Id);
@@ -388,7 +390,8 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         _powerCts = transition;
         var disconnect = Connected || _wantConnected;
         _wantConnected = !disconnect;
-        if (!disconnect) { _proxyFallback = _tunUnusable; _proxyTried = false; _offline = false; _health.Reset(); ConnectedSince = null; }
+        _recovering = false;
+        if (!disconnect) { _offline = false; _health.Reset(); ConnectedSince = null; }
         Notice = "";
         NodeUpdateStatus = ""; Notify();
         try
@@ -476,12 +479,16 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         var candidates = AvailableLocations.Where(n => AutomaticLocation ||
             (Settings.ManualCountry is not null ? n.Country == ChosenCountry : n.Id == ChosenLocationId)).ToList();
         var fallback = !AutomaticLocation && Settings.Fallback;
-        if (!AutomaticLocation && candidates.Count == 0 && !fallback)
+        var missing = !AvailableLocations.Any() ? Ui.T("Add a working subscription first.", "请先添加有效的订阅链接。")
+            : !AutomaticLocation && candidates.Count == 0 && !fallback ? Ui.T("Selected location is no longer available. Choose another location or Automatic.", "所选线路已失效，请换一条线路或选择「自动」。") : null;
+        if (missing is not null)
         {
+            // A subscription refresh can remove the endpoint while the tunnel is up. Never drop that tunnel
+            // automatically: traffic stays blocked and recovery keeps retrying until the user acts.
+            if (KeepsTunnel) { await DisconnectInternal(keepMacBridge: true); throw new InvalidOperationException(missing); }
             _wantConnected = false; await DisconnectInternal();
-            throw new InvalidOperationException(Ui.T("Selected location is no longer available. Choose another location or Automatic.", "所选线路已失效，请换一条线路或选择「自动」。"));
+            throw new InvalidOperationException(missing);
         }
-        if (!AvailableLocations.Any()) { _wantConnected = false; await DisconnectInternal(); throw new InvalidOperationException(Ui.T("Add a working subscription first.", "请先添加有效的订阅链接。")); }
         bool Cooling(NodeRow n) => _cooldowns.TryGetValue(n.Id, out var until) && until > DateTimeOffset.UtcNow;
         var available = await RankCandidates(candidates.Where(n => !Cooling(n)).ToList(), token);
         // Like a fallback group: the chosen location first, then the fastest others, same country first.
@@ -497,29 +504,17 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             await ConfigHandler.SetDefaultServerIndex(Config, row.Id);
             try
             {
-                try { await ConnectInternal(token); }
-                catch (Exception first) when (OperatingSystem.IsWindows() && !_proxyFallback && !_proxyTried && !integrationTest && !token.IsCancellationRequested
-                    && first is not MacNetworkAuthorizationException && ServiceLib.Common.Utils.IsAdministrator())
-                {
-                    // Security software often blocks the Wintun driver, and on some PCs the adapter starts but its routes or
-                    // DNS never work. System proxy, v2rayN's default mode, still carries browsers and most apps there.
-                    // Tried once per Connect: if the node fails this way too, the node is the problem, not TUN.
-                    _proxyTried = true;
-                    Logging.SaveLog("Simple.SmartConnect: TUN did not connect; retrying this location with system proxy", first);
-                    _proxyFallback = true;
-                    await DisconnectInternal();
-                    try { await ConnectInternal(token); _tunUnusable = true; }
-                    catch (Exception) when (first is not TunStartException) { _proxyFallback = false; await DisconnectInternal(); throw first; }
-                }
+                // No system-proxy fallback: apps that ignore the proxy setting would use the physical network.
+                await ConnectInternal(token);
+                _recovering = true;
                 _health.Reset(); _offline = false; _recoveryAttempts = 0; _lastHealth = DateTimeOffset.UtcNow;
                 ConnectedSince ??= DateTimeOffset.UtcNow;
-                if (_proxyFallback) Notice = Ui.T("Global mode does not work on this PC, so World Science connected with system proxy. Browsers work; a few apps may bypass it.", "全局模式在这台电脑上连不通，已改用系统代理连接。浏览器可正常使用，少数软件可能不走代理。");
                 FallbackActive = fallback && !candidates.Contains(row);
                 if (FallbackActive)
                 {
                     _nextReturnCheck = DateTimeOffset.UtcNow + ReturnCheckInterval;
                     Logging.SaveLog($"Simple.Fallback: chosen location unavailable; using {row.Name}");
-                    if (!_proxyFallback) Notice = Ui.T($"Your chosen location is unavailable, so {LocationTitle(row)} is used for now. It switches back when it recovers.", $"所选线路暂不可用，已临时切换到 {LocationTitle(row)}，恢复后会自动切回。");
+                    Notice = Ui.T($"Your chosen location is unavailable, so {LocationTitle(row)} is used for now. It switches back when it recovers.", $"所选线路暂不可用，已临时切换到 {LocationTitle(row)}，恢复后会自动切回。");
                 }
                 foreach (var node in Nodes) { node.Current = node.Id == row.Id; node.Notify(); }
                 SelectedNode = row; _lastHealthyNode = NodeKey(row); await ConfigHandler.SaveConfig(Config);
@@ -537,16 +532,27 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             {
                 lastFailure = ex;
                 Logging.SaveLog("Simple.SmartConnect", ex); _cooldowns[row.Id] = DateTimeOffset.UtcNow.AddMinutes(5);
-                await DisconnectInternal(keepMacBridge: UseMacBridge);
+                await DisconnectInternal(keepMacBridge: UseTunBridge);
                 if (!_wantConnected) throw;
                 // These failures are not caused by the node, so trying every other node only wastes time.
                 if (ex is TunStartException)
                 {
+                    if (_recovering)
+                    {
+                        // Recovery keeps retrying with the retained Mac bridge; a Windows adapter that failed
+                        // is released so the next attempt builds a new one.
+                        if (!OperatingSystem.IsMacOS()) await DisconnectInternal();
+                        throw;
+                    }
                     _wantConnected = false;
                     if (!integrationTest && await FindConflict(token) is { } conflict) throw new InvalidOperationException(conflict, ex);
                     throw;
                 }
-                if (Settings.Tun && (ex.Message.Contains("授权") || ex.Message.Contains("管理员权限"))) { _wantConnected = false; throw; }
+                if (Settings.Tun && (ex.Message.Contains("授权") || ex.Message.Contains("管理员权限")))
+                {
+                    // The adapter itself failed; do not keep a broken bridge behind a "Not connected" state.
+                    _wantConnected = false; await DisconnectInternal(suspendMacBridge: UseMacBridge); throw;
+                }
             }
         }
         throw new InvalidOperationException(ConnectionFailure.Message(lastFailure, AutomaticLocation), lastFailure);
@@ -565,7 +571,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             if (!await NodeWorks(chosen, _connectCts.Token)) return;
             Logging.SaveLog("Simple.Fallback: chosen location works again; switching back");
             _cooldowns.Remove(chosen.Id);
-            await DisconnectInternal(keepMacBridge: UseMacBridge);
+            await DisconnectInternal(keepMacBridge: UseTunBridge);
             if (_wantConnected) await ConnectSmart(_connectCts.Token);
             if (Connected && !FallbackActive) Notice = "";
         }
@@ -727,7 +733,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
                 CancelTest();
                 while (IsTesting) await Task.Delay(50);
                 _cooldowns[Config.IndexId] = now.AddMinutes(5);
-                await DisconnectInternal(keepMacBridge: UseMacBridge);
+                await DisconnectInternal(keepMacBridge: UseTunBridge);
                 if (_wantConnected) await ConnectSmart(_connectCts.Token);
             }
             catch (OperationCanceledException) when (_connectCts.IsCancellationRequested) { }
@@ -803,7 +809,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         }
         if (!integrationTest)
         {
-            Settings.Tun = !_proxyFallback; Settings.Mode = "全局代理";
+            Settings.Tun = true; Settings.Mode = "全局代理";
             Config.TunModeItem.EnableIPv6Address = true;
             Config.TunModeItem.StrictRoute = true;
             Config.TunModeItem.AutoRoute = true;
@@ -838,7 +844,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             inbound.DestOverride = ["http", "tls", "quic"];
             inbound.RouteOnly = false;
         }
-        var built = UseMacBridge ? await MacTunBridge.Build(Config, profile) : await CoreConfigContextBuilder.BuildAll(Config, profile, includeSubChain: false);
+        var built = UseTunBridge ? await MacTunBridge.Build(Config, profile) : await CoreConfigContextBuilder.BuildAll(Config, profile, includeSubChain: false);
         if (!integrationTest)
             built = built with
             {
@@ -849,7 +855,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
         try
         {
             _expectsPreCore = built.PreSocksResult is not null;
-            await CoreManager.Instance.LoadCore(built.MainResult.Context, built.PreSocksResult?.Context, retainMacTunBridge: UseMacBridge);
+            await CoreManager.Instance.LoadCore(built.MainResult.Context, built.PreSocksResult?.Context, retainMacTunBridge: UseTunBridge);
             CoreManager.Instance.VerifyRunningProcesses(_expectsPreCore);
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token); timeout.CancelAfter(TimeSpan.FromSeconds(15));
             while (true)
@@ -901,7 +907,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
             // Cancelling an in-progress connection must not discard an already authorized
             // fixed session. Toggle will suspend it after this operation releases the gate;
             // Quit still performs a full stop. Discarding it here caused the next Connect to prompt again.
-            await CoreManager.Instance.CoreStop(keepMacTunBridge: UseMacBridge);
+            await CoreManager.Instance.CoreStop(keepMacTunBridge: UseTunBridge);
             Config.TunModeItem.EnableTun = false;
             if (_proxySnapshot is not null) { await _proxySnapshot.Restore(); _proxySnapshot = null; }
             throw;
@@ -1002,7 +1008,7 @@ public sealed class ClientController(bool integrationTest = false) : INotifyProp
                 }
                 else
                 {
-                    await DisconnectInternal(keepMacBridge: UseMacBridge);
+                    await DisconnectInternal(keepMacBridge: UseTunBridge);
                     if (_powerCts is null && _wantConnected && !budget.IsCancellationRequested) await ConnectSmart(budget.Token);
                 }
             }

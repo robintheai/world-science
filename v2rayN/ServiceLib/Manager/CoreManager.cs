@@ -94,7 +94,7 @@ public class CoreManager
         await UpdateFunc(false, string.Format(ResUI.StartService, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")));
         // Only a fixed sing-box TUN -> loopback SOCKS bridge may survive a node swap.
         // Compare the complete generated config; never silently retain stale routes/DNS.
-        var eligible = retainMacTunBridge && Utils.IsMacOS() && !mainContext.IsTunEnabled
+        var eligible = retainMacTunBridge && (Utils.IsMacOS() || Utils.IsWindows()) && !mainContext.IsTunEnabled
             && preContext is { IsTunEnabled: true, RunCoreType: ECoreType.sing_box }
             && preContext.Node.ConfigType == EConfigType.SOCKS
             && preContext.Node.Address == Global.Loopback
@@ -118,7 +118,8 @@ public class CoreManager
         await CoreStop(keepBridge);
         await Task.Delay(100);
 
-        if (Utils.IsWindows() && (mainContext?.IsTunEnabled == true || preContext?.IsTunEnabled == true))
+        // A retained Windows bridge still owns its adapter; removing it would expose the physical network.
+        if (!keepBridge && Utils.IsWindows() && (mainContext?.IsTunEnabled == true || preContext?.IsTunEnabled == true))
         {
             await Task.Delay(100);
             await WindowsUtils.RemoveTunDevice();

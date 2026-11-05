@@ -126,14 +126,17 @@ public final class TunnelService extends VpnService implements Native {
   String config=testConfig!=null?testConfig:Locations.configure(this,LinkStore.config(this),fallback);
   synchronized(lifecycle){
    if(!wanted)return;
-   tunnelReady=false;try{engine.stop();}finally{closeTun();}
+   // Keep the existing VPN interface across engine restarts: while no engine runs, traffic is
+   // dropped instead of falling back to the physical network. Only disconnect() removes it.
+   tunnelReady=false;try{engine.stop();}finally{if(!wanted)closeTun();}
    if(!wanted)return;
    try{
+    if(tun==null)openTun();
     engine.start(config,getFilesDir().getAbsolutePath(),this);
     if(tun==null||!tun.getFileDescriptor().valid())throw new IllegalStateException("VPN interface unavailable");
     tunnelReady=true;lastNetwork=networkKey();applyUnderlying();
     if(!wanted){tunnelReady=false;try{engine.stop();}finally{closeTun();}return;}
-   }catch(Exception failure){tunnelReady=false;try{engine.stop();}finally{closeTun();}throw failure;}
+   }catch(Exception failure){tunnelReady=false;try{engine.stop();}finally{if(!wanted)closeTun();}throw failure;}
   }
   boolean healthy=probe();if(wanted)state=healthy?"Connected":"Reconnecting…";
  }
@@ -160,7 +163,10 @@ public final class TunnelService extends VpnService implements Native {
   }
   return false;
  }
- public int openTun()throws Exception{if(prepare(this)!=null)throw new Exception("VPN permission required");Builder b=new Builder().setSession("World Science").setMtu(1400).addAddress("172.19.0.1",30).addAddress("fdfe:dcba:9876::1",126).addRoute("0.0.0.0",0).addRoute("::",0).addDnsServer("172.19.0.2");if(Build.VERSION.SDK_INT>=29)b.setMetered(false);Network n=underlying;if(n!=null)b.setUnderlyingNetworks(new Network[]{n});tun=b.establish();if(tun==null)throw new Exception("VPN unavailable");return tun.getFd();}
+ public int openTun()throws Exception{if(prepare(this)!=null)throw new Exception("VPN permission required");Builder b=new Builder().setSession("World Science").setMtu(1400).addAddress("172.19.0.1",30).addAddress("fdfe:dcba:9876::1",126).addRoute("0.0.0.0",0).addRoute("::",0).addDnsServer("172.19.0.2");if(Build.VERSION.SDK_INT>=29)b.setMetered(false);Network n=underlying;if(n!=null)b.setUnderlyingNetworks(new Network[]{n});ParcelFileDescriptor previous=tun,next=b.establish();if(next==null)throw new Exception("VPN unavailable");tun=next;
+  // The new interface replaces the previous one before it is released, so there is no unprotected gap.
+  if(previous!=null)try{previous.close();}catch(Exception ignored){}
+  return tun.getFd();}
  public void protectSocket(int fd)throws Exception{if(!super.protect((int)fd))throw new Exception("Socket protection failed");}
  public boolean isApple(){return false;}
  public String defaultInterface(){
