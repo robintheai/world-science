@@ -78,7 +78,7 @@ internal static class LaunchAtLogin
             if (!OperatingSystem.IsMacOS() || !File.Exists(AgentPath) || MacBundle(AppContext.BaseDirectory) is not { } bundle) return;
             if (File.ReadAllText(AgentPath) != AgentPlist(bundle)) Set(true);
         }
-        catch (Exception ex) { Logging.SaveLog("Simple.LaunchAtLogin", ex); }
+        catch (Exception) { /* Best effort: the user can still turn it on in Settings. */ }
     }
     /// <summary>An earlier edition's login item would start the old app next to this one. Replace it with ours.
     /// Their LaunchAgents used the com.robintheai prefix; their Windows tasks started v2rayNSimple.exe.</summary>
