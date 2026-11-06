@@ -24,9 +24,9 @@ together with that commit.
    plus the Android APK (see `mobile/README.md`).
 3. Run the smoke tests, the integration test on macOS, the Go tests and the Android instrumented tests.
 4. Write `SHA256SUMS` for the packages, create the GitHub release `vX.Y.Z` with all packages and `SHA256SUMS`, then
-   mirror the same files to `https://ai.z5a.com/clients/world-science/releases/vX.Y.Z/` and update its `latest.json`. The public page is
-   `https://ai.z5a.com/clients/owlpath/`; its `releases/` and `latest.json` link to the world-science folder, which stays because installed 1.0.x apps read it
-   (same shape as the GitHub release API).
+   mirror the same files to `https://ai.z5a.com/clients/world-science/releases/vX.Y.Z/` and update its `latest.json`
+   (same shape as the GitHub release API). The public page is `https://ai.z5a.com/clients/owlpath/`; its `releases/`
+   and `latest.json` link to the world-science folder, which stays because installed 1.0.x apps read it.
 
 The desktop updater reads the mirror first and falls back to the GitHub API. It accepts packages only from
 `github.com/robintheai/world-science/releases/download/` or the mirror's `/clients/world-science/releases/` folder,
