@@ -41,7 +41,7 @@ Owlpath is built on [v2rayN](https://github.com/2dust/v2rayN) and is made for be
 Package names keep the earlier `World-Science-` prefix so installed earlier versions can still update themselves.
 
 - GitHub: [Releases](https://github.com/robintheai/world-science/releases)
-- Mirror: <https://ai.z5a.com/clients/world-science/> (for when GitHub is unreachable; identical files and checksums)
+- Mirror: <https://ai.z5a.com/clients/owlpath/> (for when GitHub is unreachable; identical files and checksums)
 
 For a first install see the [installation guide](INSTALL.md) (Chinese). There is no iOS version yet (it needs Apple developer signing).
 

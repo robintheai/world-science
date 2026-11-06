@@ -4,7 +4,7 @@
 
 开始前请准备好：**订阅链接**（由你的节点服务商提供，以 `https://` 开头），并完全退出其他代理 / VPN 软件（v2rayN、Clash、Shadowrocket 等）。两个代理同时运行会互相抢占网络。
 
-下载地址：GitHub [Releases](https://github.com/robintheai/world-science/releases)，或国内镜像 <https://ai.z5a.com/clients/world-science/>。
+下载地址：GitHub [Releases](https://github.com/robintheai/world-science/releases)，或国内镜像 <https://ai.z5a.com/clients/owlpath/>。
 
 ## Mac
 

@@ -41,7 +41,7 @@ Owlpath 基于 [v2rayN](https://github.com/2dust/v2rayN) 开发，非常适合�
 安装包文件名暂时沿用旧名 `World-Science-`，这样已安装的旧版本仍能自动更新。
 
 - GitHub：[Releases](https://github.com/robintheai/world-science/releases)
-- 国内镜像：<https://ai.z5a.com/clients/world-science/>（GitHub 打不开时使用，文件和校验值完全相同）
+- 国内镜像：<https://ai.z5a.com/clients/owlpath/>（GitHub 打不开时使用，文件和校验值完全相同）
 
 第一次安装请看 [安装教程](INSTALL.md)。iOS 版暂未提供（需要 Apple 开发者签名）。
 
